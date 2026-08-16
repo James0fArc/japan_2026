@@ -204,6 +204,32 @@
   }
   .traincard.nophoto .route{width:100%;}
 
+  .bookedcard{
+    display:flex;align-items:stretch;border-radius:16px;overflow:hidden;
+    background:rgba(76,175,80,0.09);border:2px solid rgba(76,175,80,0.55);margin-bottom:14px;min-height:104px;
+  }
+  .bookedcard .route{
+    flex:0 0 auto;width:46%;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:5px;
+  }
+  .bookedcard .route .eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:#66BB6A;}
+  .bookedcard .route .name{font-size:14.5px;font-weight:700;color:var(--text);line-height:1.3;}
+  .bookedcard .route .meta{font-size:11.5px;color:var(--text-secondary);}
+  .bookedcard .route .row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+  .bookedcard .btn.activity{color:#66BB6A;border-color:rgba(76,175,80,0.45);}
+  .bookedcard .photo{
+    position:relative;flex:1;min-width:110px;background-size:cover;background-position:center;
+  }
+  .bookedcard .photo::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg, rgba(76,175,80,0.09) 0%, rgba(31,23,18,0) 55%);
+  }
+  .bookedcard .photo .name{
+    position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
+    text-align:right;text-shadow:0 2px 10px rgba(0,0,0,0.65);max-width:75%;
+  }
+  .bookedcard.nophoto .route{width:100%;}
+
   .hotel{
     display:flex;gap:16px;align-items:center;padding:18px 20px;margin:6px 0 16px;
     border-radius:16px;background:linear-gradient(135deg, rgba(217,169,74,0.10), rgba(217,169,74,0.03));
@@ -302,109 +328,48 @@ const days = [
 { n:1, photo:IMG_YOKOHAMA, id:"d1", date:"Mon 10/5", label:"Arrive Haneda \u2192 Yokohama", stops:[
   {type:"train", t:"7:00", from:"London", to:"Haneda Airport", name:"Flight", photo:IMG_TRAIN_PLANE, loc:"Haneda Airport, Tokyo"},
   {type:"train", t:"8:00", from:"Haneda Airport", to:"Yokohama", name:"Keikyu Airport Line", price:"\u00a5340", link:"https://www.haneda-tokyo-access.com/en/", photo:IMG_TRAIN_KEIKYU, loc:"Yokohama Station, Yokohama"},
-  {type:"activity", t:"9:00", icon:"\ud83c\udfd9\ufe0f", title:"Landmark Tower Sky Garden", blurb:"Observation deck \u2014 views over Tokyo and, on a clear day, Mt Fuji.", loc:"Yokohama Landmark Tower, Yokohama", link:M("Yokohama Landmark Tower Sky Garden")},
-  {type:"activity", t:"10:15", icon:"\ud83c\udfed", title:"Red Brick Warehouse", blurb:"Restored waterfront warehouses, shops and cafes.", loc:"Yokohama Red Brick Warehouse, Yokohama", link:M("Yokohama Red Brick Warehouse")},
-  {type:"activity", t:"11:00", icon:"\u2693", title:"Japan Coast Guard Museum Yokohama", loc:"Japan Coast Guard Museum Yokohama, Yokohama", link:M("Japan Coast Guard Museum Yokohama")},
-  {type:"activity", t:"12:00", icon:"\ud83c\udf5c", title:"Lunch in Chinatown", blurb:"Yokohama's Chukagai \u2014 one of the largest Chinatowns in the world.", loc:"Yokohama Chinatown, Yokohama", link:M("Yokohama Chinatown")},
-  {type:"activity", t:"13:30", icon:"\u2693", title:"Yamashita Park & Hikawa-Maru", blurb:"Waterfront park with the retired 1930s ocean liner moored alongside.", loc:"Yamashita Park, Yokohama", link:M("Yamashita Park Hikawa Maru")},
-  {type:"activity", t:"14:45", icon:"\ud83c\udf33", title:"Harbor View Park", blurb:"Hilltop park in the Yamate district, views back over the bay.", loc:"Harbor View Park, Yokohama", link:M("Harbor View Park Yokohama")},
-  {type:"activity", t:"Evening", icon:"\ud83c\udfb7", title:"Dinner + jazz bar", blurb:"Yokohama has a strong jazz heritage \u2014 Noge or Motomachi both have long-running bars.", loc:"Noge, Yokohama", link:M("jazz bar Noge Yokohama")}
 ]},
 { n:2, photo:IMG_HAKONE, id:"d2", date:"Tue 10/6", label:"Yokohama \u2192 Hakone", stops:[
-  {type:"activity", t:"9:00", icon:"\u2615", title:"Relaxed morning, check out", blurb:"Yokohama's covered yesterday \u2014 coffee near the hotel before heading out.", loc:"Yokohama Station, Yokohama", link:M("cafes near Yokohama Station")},
   {type:"train", t:"12:00", from:"Yokohama", to:"Hakone-Yumoto", name:"JR Tokaido Line", price:"\u00a51,040", photo:IMG_TRAIN_HAKONETOZAN, loc:"Hakone-Yumoto Station, Hakone"},
   {type:"hotel", title:"Ichinoyu Honkan", nights:"2 nights", loc:"Ichinoyu Honkan, Hakone", link:M("Ichinoyu Honkan Hakone")},
-  {type:"activity", t:"Evening", icon:"\u2668\ufe0f", title:"Onsen + kaiseki dinner at the ryokan", loc:"Hakone-Yumoto, Hakone", link:M("Hakone-Yumoto onsen")}
 ]},
 { n:3, photo:IMG_HAKONE, date:"Wed 10/7", label:"Hakone loop", stops:[
-  {type:"activity", t:"9:00", icon:"\ud83d\ude9f", title:"Tozan Railway + cable car to Owakudani", blurb:"Ride up through Gora on the mountain line.", loc:"Owakudani, Hakone", link:M("Owakudani Hakone")},
-  {type:"activity", t:"10:00", icon:"\ud83c\udf0b", title:"Owakudani volcanic valley", blurb:"Black eggs, steaming vents, Fuji views on a clear day.", loc:"Owakudani, Hakone", link:M("Owakudani")},
-  {type:"activity", t:"12:00", icon:"\u26f4\ufe0f", title:"Lake Ashi pirate-ship cruise", blurb:"Togendai to Moto-Hakone across the lake.", loc:"Lake Ashi, Hakone", link:M("Lake Ashi Pirate Ship Togendai")},
-  {type:"activity", t:"14:00", icon:"\u26e9\ufe0f", title:"Hakone Shrine + floating torii", loc:"Hakone Shrine, Hakone", link:M("Hakone Shrine")},
-  {type:"activity", t:"16:00", icon:"\ud83d\uddbc\ufe0f", title:"Hakone Open-Air Museum (optional)", blurb:"Sculpture park, on the way back if time allows.", loc:"Hakone Open-Air Museum, Hakone", link:M("Hakone Open Air Museum")},
-  {type:"activity", t:"Evening", icon:"\u2668\ufe0f", title:"Onsen + dinner at the ryokan", loc:"Hakone-Yumoto, Hakone", link:M("Hakone-Yumoto onsen")}
 ]},
 { n:4, photo:IMG_KYOTO, id:"d4", date:"Thu 10/8", label:"Hakone \u2192 Kyoto", stops:[
   {type:"train", t:"9:30", from:"Odawara", to:"Kyoto", name:"Shinkansen", price:"\u00a512,100", link:"https://global.jr-central.co.jp/en/onlinebooking/", photo:IMG_TRAIN_SHINKANSEN, loc:"Kyoto Station, Kyoto", book:true},
   {type:"hotel", title:"Madoka Kyoto Station West", nights:"3 nights", loc:"Madoka Kyoto Station West, Kyoto", link:M("Madoka Kyoto Station West")},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf5c", title:"Nishiki Market food wander", blurb:"Kyoto's kitchen \u2014 stalls, snacks, dinner.", loc:"Nishiki Market, Kyoto", link:M("Nishiki Market Kyoto")}
 ]},
 { n:5, photo:IMG_KYOTO, date:"Fri 10/9", label:"Kyoto \u2014 Fushimi \u2192 Higashiyama \u2192 Gion", stops:[
-  {type:"activity", t:"6:30", icon:"\u26e9\ufe0f", title:"Fushimi Inari Taisha at dawn", blurb:"2 min by JR from Kyoto Sta. \u2014 go before the crowds.", loc:"Fushimi Inari Taisha, Kyoto", link:M("Fushimi Inari Taisha")},
-  {type:"activity", t:"9:30", icon:"\ud83c\udfe9", title:"Kiyomizu-dera + Sannenzaka/Ninenzaka", blurb:"Wooden temple terrace, old shopping lanes.", loc:"Kiyomizu-dera, Kyoto", link:M("Kiyomizu-dera")},
-  {type:"activity", t:"13:30", icon:"\u26e9\ufe0f", title:"Yasaka Shrine + Maruyama Park", loc:"Yasaka Shrine, Kyoto", link:M("Yasaka Shrine Kyoto")},
-  {type:"activity", t:"15:30", icon:"\ud83c\udf75", title:"Tea ceremony", blurb:"Book a slot near Kiyomizu/Gion.", loc:"Gion, Kyoto", link:M("tea ceremony Gion Kyoto"), book:true},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf71", title:"Kaiseki dinner in Gion", blurb:"Book weeks ahead for the good ones.", loc:"Gion, Kyoto", link:M("kaiseki restaurants Gion"), book:true}
 ]},
 { n:6, photo:IMG_KYOTO, id:"d6", date:"Sat 10/10", label:"Kyoto \u2014 Arashiyama, Kinkaku-ji & Nijo Castle", stops:[
-  {type:"activity", t:"7:30", icon:"\ud83c\udf8b", title:"Arashiyama Bamboo Grove", blurb:"Early, before the tour groups arrive.", loc:"Arashiyama Bamboo Grove, Kyoto", link:M("Arashiyama Bamboo Grove")},
-  {type:"activity", t:"9:00", icon:"\ud83c\udfe9", title:"Tenryu-ji", loc:"Tenryu-ji, Kyoto", link:M("Tenryu-ji Kyoto")},
-  {type:"activity", t:"10:30", icon:"\u26f5", title:"Hozugawa river boat ride", blurb:"Book ahead \u2014 seasonal timed departures.", loc:"Hozugawa River Boat Ride, Kyoto", link:"https://www.hozugawakudari.jp/", book:true},
-  {type:"activity", t:"13:30", icon:"\ud83c\udfef", title:"Kinkaku-ji (Golden Pavilion)", loc:"Kinkaku-ji, Kyoto", link:M("Kinkaku-ji")},
-  {type:"activity", t:"15:00", icon:"\ud83c\udff0", title:"Nijo Castle", loc:"Nijo Castle, Kyoto", link:M("Nijo Castle")}
 ]},
 { n:7, photo:IMG_KYOTO, date:"Sun 10/11", label:"Kyoto \u2014 Ginkaku-ji, Philosopher's Path & Uji", stops:[
-  {type:"activity", t:"9:00", icon:"\ud83c\udfe9", title:"Ginkaku-ji (Silver Pavilion)", loc:"Ginkaku-ji, Kyoto", link:M("Ginkaku-ji Kyoto")},
-  {type:"activity", t:"9:45", icon:"\ud83c\udf42", title:"Philosopher's Path walk", blurb:"Canal-side path between Ginkaku-ji and Nanzen-ji.", loc:"Philosopher's Path, Kyoto", link:M("Philosopher's Path Kyoto")},
-  {type:"activity", t:"11:00", icon:"\u26e9\ufe0f", title:"Nanzen-ji", loc:"Nanzen-ji, Kyoto", link:M("Nanzen-ji Kyoto")},
-  {type:"activity", t:"12:30", icon:"\ud83c\udf5c", title:"Lunch near Nanzen-ji", loc:"Nanzen-ji, Kyoto", link:M("restaurants near Nanzen-ji Kyoto")},
-  {type:"activity", t:"14:00", icon:"\u26e9\ufe0f", title:"Byodo-in Temple, Uji", blurb:"Day trip \u2014 the Phoenix Hall on the 10-yen coin, ~20 min by train.", loc:"Byodo-in Temple, Uji", link:M("Byodo-in Temple Uji")},
-  {type:"activity", t:"15:30", icon:"\ud83c\udf75", title:"Matcha tasting in Uji", blurb:"Uji is Japan's historic matcha capital.", loc:"Uji, Kyoto", link:M("matcha tea Uji")},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf5c", title:"Dinner in Pontocho", loc:"Pontocho, Kyoto", link:M("Pontocho Kyoto")}
 ]},
 { n:8, photo:IMG_OSAKA, date:"Mon 10/12", label:"Osaka \u2014 Castle, markets, teamLab", stops:[
-  {type:"activity", t:"9:00", icon:"\ud83c\udff0", title:"Osaka Castle + park", loc:"Osaka Castle, Osaka", link:M("Osaka Castle")},
-  {type:"activity", t:"11:30", icon:"\ud83c\udf5c", title:"Kuromon Ichiba Market", blurb:"Food-stall lunch wander.", loc:"Kuromon Ichiba Market, Osaka", link:M("Kuromon Ichiba Market")},
-  {type:"activity", t:"13:30", icon:"\u23f8\ufe0f", title:"Free block / rest", blurb:"Shinsekai if you're up for more walking.", loc:"Shinsekai, Osaka", link:M("Shinsekai Osaka")},
-  {type:"activity", t:"17:00", icon:"\ud83c\udf3f", title:"teamLab Botanic Garden Osaka", blurb:"Book an evening slot \u2014 best after dark.", loc:"teamLab Botanic Garden Osaka, Osaka", link:M("teamLab Botanic Garden Osaka"), book:true},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf03", title:"Dotonbori dinner + river cruise", loc:"Dotonbori, Osaka", link:M("Dotonbori Osaka")}
 ]},
 { n:9, photo:IMG_KOYASAN, id:"d9", date:"Tue 10/13", label:"Osaka \u2192 Koyasan", stops:[
   {type:"train", t:"9:00", from:"Osaka/Kyoto", to:"Koyasan", name:"Gran Tenku scenic view", price:"\u00a53,640", link:"https://www.nankai.co.jp/traffic/kankoutrain/grantenku/en/reservation/index.html", photo:IMG_TRAIN_GRANTENKU, loc:"Koyasan Cable Car Station, Koyasan"},
   {type:"hotel", title:"Koyasan Shukubo Daimyoin", nights:"1 night", loc:"Koyasan Shukubo Daimyoin, Koyasan", link:M("Koyasan Shukubo Daimyoin")},
-  {type:"activity", t:"13:00", icon:"\ud83c\udfe9", title:"Kongobu-ji + Danjo Garan", blurb:"Konpon Daito pagoda.", loc:"Kongobu-ji, Koyasan", link:M("Kongobu-ji Koyasan")},
-  {type:"activity", t:"Evening", icon:"\ud83c\udfee", title:"Okunoin night walk", blurb:"Lantern-lit cemetery \u2014 book a guided walk.", loc:"Okunoin Cemetery, Koyasan", link:M("Okunoin Cemetery Koyasan"), book:true}
 ]},
 { n:10, photo:IMG_NARA, id:"d10", date:"Wed 10/14", label:"Koyasan \u2192 Nara", stops:[
-  {type:"activity", t:"6:00", icon:"\ud83d\ude4f", title:"Morning prayer service", blurb:"Optional, at the temple.", loc:"Koyasan Shukubo Daimyoin, Koyasan", link:M("Koyasan temple morning service")},
   {type:"train", t:"8:30", from:"Koyasan", to:"Nara", name:"Gran Tenku & Aoniyoshi", price:"\u00a55,050", link:"https://www.kintetsu.co.jp/foreign/english/aoniyoshi/", photo:IMG_TRAIN_AONIYOSHI, loc:"Nara Station, Nara"},
   {type:"hotel", title:"Hotel Asyl Nara", nights:"1 night", loc:"Hotel Asyl Nara, Nara", link:M("Hotel Asyl Nara")},
-  {type:"activity", t:"Afternoon", icon:"\ud83e\udd8c", title:"Nara Park + deer", blurb:"Quieter once day-trippers leave.", loc:"Nara Park, Nara", link:M("Nara Park")},
-  {type:"activity", t:"Evening", icon:"\ud83c\udfe9", title:"Todai-ji", blurb:"Check last-entry time.", loc:"Todai-ji, Nara", link:M("Todai-ji Nara")}
 ]},
 { n:11, photo:IMG_TOKYO, id:"d11", date:"Thu 10/15", label:"Nara \u2192 Tokyo", stops:[
-  {type:"activity", t:"8:00", icon:"\u26e9\ufe0f", title:"Kasuga Taisha + Nara Park", blurb:"Quiet before the crowds arrive.", loc:"Kasuga Taisha, Nara", link:M("Kasuga Taisha")},
   {type:"train", t:"11:00", from:"Nara", to:"Tokyo", name:"Shinkansen", price:"\u00a513,970", link:"https://global.jr-central.co.jp/en/onlinebooking/", photo:IMG_TRAIN_SHINKANSEN, loc:"Tokyo Station, Tokyo"},
   {type:"hotel", title:"ELE Hotel", nights:"5 nights", loc:"ELE Hotel, Tokyo", link:M("ELE Hotel Tokyo")},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf5c", title:"Light dinner near the hotel", loc:"ELE Hotel, Tokyo", link:M("Tokyo restaurants")}
 ]},
 { n:12, photo:IMG_TOKYO, date:"Fri 10/16", label:"Tokyo \u2014 Asakusa/Skytree \u2192 teamLab Planets", stops:[
-  {type:"activity", t:"9:00", icon:"\u26e9\ufe0f", title:"Senso-ji + Nakamise", loc:"Sensoji Temple, Tokyo", link:M("Sensoji Temple Asakusa")},
-  {type:"activity", t:"10:00", icon:"\ud83d\uddfc", title:"Tokyo Skytree", loc:"Tokyo Skytree, Tokyo", link:M("Tokyo Skytree")},
-  {type:"activity", t:"13:30", icon:"\u2728", title:"teamLab Planets, Toyosu", blurb:"Book ahead \u2014 barefoot, walk-through-water exhibit.", loc:"teamLab Planets, Tokyo", link:"https://www.teamlab.art/e/tokyo/", book:true},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf5c", title:"Dinner near Toyosu", loc:"Toyosu, Tokyo", link:M("restaurants Toyosu Tokyo")}
 ]},
 { n:13, photo:IMG_TOKYO, date:"Sat 10/17", label:"Tokyo \u2014 Ghibli \u2192 Shinjuku \u2192 Shibuya", stops:[
-  {type:"activity", t:"9:40", icon:"\ud83c\udfac", title:"Ghibli Museum", blurb:"Timed entry \u2014 book the moment tickets release.", loc:"Ghibli Museum, Tokyo", link:"https://www.ghibli-museum.jp/en/", book:true},
-  {type:"activity", t:"14:00", icon:"\ud83c\udf33", title:"Shinjuku Gyoen / Harajuku", loc:"Shinjuku Gyoen, Tokyo", link:M("Shinjuku Gyoen")},
-  {type:"activity", t:"17:30", icon:"\ud83c\udfd9\ufe0f", title:"Shibuya Sky sunset slot", blurb:"Book ahead for a sunset time.", loc:"Shibuya Sky, Tokyo", link:"https://www.shibuya-scramble-square.com/sky/en/", book:true},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf5c", title:"Dinner in Shibuya", loc:"Shibuya, Tokyo", link:M("restaurants Shibuya")}
 ]},
 { n:14, photo:IMG_NIKKO, id:"d14", date:"Sun 10/18", label:"Nikko day trip", stops:[
   {type:"train", t:"7:00", from:"Asakusa", to:"Nikko", name:"Spacia X", price:"\u00a54,510", link:"https://www.tobu.co.jp/spaciax/en/fun/seat/", photo:IMG_TRAIN_SPACIAX, loc:"Toshogu Shrine, Nikko", book:true},
-  {type:"activity", t:"9:30", icon:"\u26e9\ufe0f", title:"Toshogu Shrine", loc:"Toshogu Shrine, Nikko", link:M("Toshogu Shrine Nikko")},
-  {type:"activity", t:"11:30", icon:"\u26e9\ufe0f", title:"Futarasan Shrine + Rinno-ji", loc:"Futarasan Shrine, Nikko", link:M("Futarasan Shrine Nikko")},
-  {type:"activity", t:"13:00", icon:"\ud83c\udf5c", title:"Lunch \u2014 local yuba", loc:"Nikko", link:M("yuba restaurant Nikko")},
   {type:"train", t:"14:30", from:"Nikko", to:"Asakusa", name:"Spacia X", price:"\u00a54,510", link:"https://www.tobu.co.jp/spaciax/en/fun/seat/", photo:IMG_TRAIN_SPACIAX, loc:"Asakusa Station, Tokyo"}
 ]},
 { n:15, photo:IMG_TOKYO, date:"Mon 10/19", label:"Tokyo \u2014 Roppongi/Azabudai \u2192 Ginza", stops:[
-  {type:"activity", t:"10:00", icon:"\ud83d\uddbc\ufe0f", title:"Mori Art Museum / Tokyo City View", loc:"Mori Art Museum, Tokyo", link:M("Mori Art Museum Roppongi")},
-  {type:"activity", t:"14:00", icon:"\u2728", title:"teamLab Borderless, Azabudai Hills", blurb:"Book ahead \u2014 sells out on weekends.", loc:"teamLab Borderless Azabudai Hills, Tokyo", link:"https://teamlab-borderless-azabudai.com/", book:true},
-  {type:"activity", t:"Evening", icon:"\ud83c\udf63", title:"Ginza \u2014 omakase dinner", blurb:"Book weeks ahead.", loc:"Ginza, Tokyo", link:M("sushi omakase Ginza"), book:true},
-  {type:"activity", t:"Evening", icon:"\ud83d\uded2", title:"Last wander / shopping", loc:"Ginza, Tokyo", link:M("Ginza")}
 ]},
 { n:16, photo:IMG_TOKYO, date:"Tue 10/20", label:"Depart \u2014 Asakusa \u2192 Haneda", stops:[
-  {type:"activity", t:"7:30", icon:"\ud83d\uded2", title:"Pack, last-minute shopping", loc:"Asakusa, Tokyo", link:M("Asakusa")},
   {type:"train", t:"9:30", from:"Asakusa", to:"Haneda Airport", name:"Keikyu/Toei Asakusa Line", price:"\u00a5610", photo:IMG_TRAIN_KEIKYU, loc:"Haneda Airport, Tokyo"},
   {type:"train", t:"13:05", from:"Haneda Airport", to:"London", name:"Flight", photo:IMG_TRAIN_PLANE, loc:"Haneda Airport, Tokyo"}
 ]}
@@ -524,6 +489,20 @@ days.forEach(d=>{
       html += '<div class="row">';
       if(s.link) html += '<a class="btn site" href="'+s.link+'" target="_blank">Site \u2197</a>';
       if(s.book) html += '<span class="tag">Book ahead</span>';
+      html += '</div></div>';
+      if(s.photo){
+        html += '<div class="photo" style="background-image:url('+s.photo+')"><div class="name">'+s.name+'</div></div>';
+      }
+      html += '</div>';
+    } else if(s.type==='booked'){
+      const cls = s.photo ? 'bookedcard' : 'bookedcard nophoto';
+      html += '<div class="'+cls+'">';
+      html += '<div class="route"><div class="eyebrow">Booked</div>';
+      html += '<div class="name">'+s.name+'</div>';
+      if(s.meta) html += '<div class="meta">'+s.meta+'</div>';
+      html += '<div class="row">';
+      if(s.activityLink) html += '<a class="btn activity" href="'+s.activityLink+'" target="_blank">Site \u2197</a>';
+      if(s.mapLink) html += '<a class="btn map" href="'+s.mapLink+'" target="_blank">Map \u2197</a>';
       html += '</div></div>';
       if(s.photo){
         html += '<div class="photo" style="background-image:url('+s.photo+')"><div class="name">'+s.name+'</div></div>';
