@@ -9,4 +9,7 @@ t006,travel,2026-10-14,,Koyasan → Nara,Gran Tenku & Ayoniyoshi,,,train_aoniyos
 t007,travel,2026-10-15,,Nara → Tokyo,Shinkansen,,,train_shinkansen,
 t008,travel,2026-10-18,,Asakusa → Nikko,Spacia X,,,train_spaciax,
 t009,travel,2026-10-18,,Nikko → Asakusa,Spacia X,,,train_spaciax,
-p001,planned,2026-10-15,,Teamlabs Borderless,,Tokyo,https://www.teamlab.art/e/tokyo/,,
+p001,planned,2026-10-15,,Teamlabs Borderless,,Tokyo,https://www.teamlab.art/e/tokyo/,teamlabs_borderless,
+p002,planned,2026-10-16,,Pokémon Cafe,,Tokyo,https://www.pokemon-cafe.jp/en/cafe/,pokemon_cafe,
+p003,planned,2026-10-17,,Ghibli Museum,,Ginza,https://www.ghibli-museum.jp/en/,ghibli_museum,
+u001,unplanned,2026-10-12,,Osaka-jo Castle,,Osaka,,oaska_castle,
