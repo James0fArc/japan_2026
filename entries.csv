@@ -1,0 +1,12 @@
+id,category,date,time,description,name,location,url,photo,notes
+t001,travel,2026-10-05,9:00,London Heathrow → Haneda Airport,British Airways,,,train_plane,
+t002,travel,2026-10-20,13:05,Haneda Airport → London Heathrow,British Airways,,,train_plane,
+t003,travel,2026-10-05,,Haneda Airport → Yokohama,Keikyu Aiport Line,,,train_keikyu,
+t004,travel,2026-10-06,,Yokohama → Odawara,JR Tokaido Line,,,train_jrtokaido,
+t004,travel,2026-10-08,,Odawara → Kyoto,Shinkansen,,,train_shinkansen,
+t005,travel,2026-10-13,,Kyoto → Koyasan,Gran Tenku,,,train_grantenku,
+t006,travel,2026-10-14,,Koyasan → Nara,Gran Tenku & Ayoniyoshi,,,train_aoniyoshi,
+t007,travel,2026-10-15,,Nara → Tokyo,Shinkansen,,,train_shinkansen,
+t008,travel,2026-10-18,,Asakusa → Nikko,Spacia X,,,train_spaciax,
+t009,travel,2026-10-18,,Nikko → Asakusa,Spacia X,,,train_spaciax,
+p001,planned,2026-10-15,,Teamlabs Borderless,,Tokyo,https://www.teamlab.art/e/tokyo/,,
