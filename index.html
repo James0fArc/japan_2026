@@ -328,7 +328,7 @@
 <section class="hero" id="hero">
   <p class="eyebrow">5 &ndash; 20 October 2026</p>
   <h1>&#31179;&#12398;&#26085;&#26412; &mdash; Autumn in Japan</h1>
-  <p class="sub">A sixteen-day route through Yokohama, Hakone, Kyoto, Osaka, Koyasan, Nara, Tokyo and Nikko, timed to keep each day in one part of town.</p>
+  <p class="sub">A sixteen-day route through Yokohama, Hakone, Kyoto, Osaka, Koyasan, Nara, Tokyo and Nikko.</p>
   <div class="route">
     <span>Yokohama</span><span>Hakone</span><span>Kyoto</span><span>Osaka</span>
     <span>Koyasan</span><span>Nara</span><span>Tokyo</span><span>Nikko</span>
@@ -343,72 +343,75 @@
 <footer>Built from your itinerary &middot; times are a framework, not a rulebook &middot; tap any card to open its site or map</footer>
 
 <script>
-const HERO_IMG = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA8ADwAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFB[...]";
 const IMG_AUTUMN = "images/autumn.jpg";
-const IMG_YOKOHAMA = "images/yokohama.jpg";
-const IMG_KYOTO = "images/kyoto.jpg";
-const IMG_OSAKA = "images/osaka.jpg";
-const IMG_NIKKO = "images/nikko.jpg";
-const IMG_KOYASAN = "images/koyasan.jpg";
-const IMG_HAKONE = "images/hakone.jpg";
-const IMG_TOKYO = "images/tokyo.jpg";
-const IMG_NARA = "images/nara.jpg";
 const M = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+
+// Derives a day's header photo from its city name, e.g. "Kyoto" -> images/kyoto.jpg.
+// Keeps day photos on the same dynamic, key-based system as entry photos (photoFromKey)
+// instead of a hand-maintained constant per city.
+function dayPhotoFor(cityTitle){
+  if(!cityTitle) return null;
+  return 'images/' + cityTitle.toLowerCase().replace(/[^a-z0-9]+/g, '') + '.jpg';
+}
 
 // --- Days array (kept as before for non-travel/hotel structure) ---
 const days = [
-{ n:1, photo:IMG_YOKOHAMA, id:"d1", date:"Mon 10/5", label:"Arrive Haneda \u2192 Yokohama", stops:[
+{ n:1, id:"d1", date:"Mon 10/5", label:"Arrive Haneda \u2192 Yokohama", stops:[
   // NOTE: train/travel stops will be replaced/added from entries.csv -- keep non-travel stops here
   {type:"hotel", title:"Hotel PLUMM Yokohama", nights:"1 night", loc:"Hotel PLUMM Yokohama", link:M("Hotel PLUMM Yokohama")}
 ]},
-{ n:2, photo:IMG_HAKONE, id:"d2", date:"Tue 10/6", label:"Yokohama \u2192 Hakone", stops:[
+{ n:2, id:"d2", date:"Tue 10/6", label:"Yokohama \u2192 Hakone", stops:[
   {type:"hotel", title:"Ichinoyu Honkan", nights:"2 nights", loc:"Ichinoyu Honkan, Hakone", link:M("Ichinoyu Honkan Hakone")},
 ]},
-{ n:3, photo:IMG_HAKONE, date:"Wed 10/7", label:"Hakone loop", stops:[
+{ n:3, date:"Wed 10/7", label:"Hakone loop", stops:[
 ]},
-{ n:4, photo:IMG_KYOTO, id:"d4", date:"Thu 10/8", label:"Hakone \u2192 Kyoto", stops:[
+{ n:4, id:"d4", date:"Thu 10/8", label:"Hakone \u2192 Kyoto", stops:[
   {type:"hotel", title:"Madoka Kyoto Station West", nights:"3 nights", loc:"Madoka Kyoto Station West, Kyoto", link:M("Madoka Kyoto Station West")},
 ]},
-{ n:5, photo:IMG_KYOTO, date:"Fri 10/9", label:"Kyoto \u2014 Fushimi \u2192 Higashiyama \u2192 Gion", stops:[
+{ n:5, date:"Fri 10/9", label:"Kyoto \u2014 Fushimi \u2192 Higashiyama \u2192 Gion", stops:[
 ]},
-{ n:6, photo:IMG_KYOTO, id:"d6", date:"Sat 10/10", label:"Kyoto \u2014 Arashiyama, Kinkaku-ji & Nijo Castle", stops:[
+{ n:6, id:"d6", date:"Sat 10/10", label:"Kyoto \u2014 Arashiyama, Kinkaku-ji & Nijo Castle", stops:[
 ]},
-{ n:7, photo:IMG_KYOTO, date:"Sun 10/11", label:"Kyoto \u2014 Ginkaku-ji, Philosopher's Path & Uji", stops:[
+{ n:7, date:"Sun 10/11", label:"Kyoto \u2014 Ginkaku-ji, Philosopher's Path & Uji", stops:[
 ]},
-{ n:8, photo:IMG_OSAKA, date:"Mon 10/12", label:"Osaka \u2014 Castle, markets, teamLab", stops:[
+{ n:8, date:"Mon 10/12", label:"Osaka \u2014 Castle, markets, teamLab", stops:[
 ]},
-{ n:9, photo:IMG_KOYASAN, id:"d9", date:"Tue 10/13", label:"Osaka \u2192 Koyasan", stops:[
+{ n:9, id:"d9", date:"Tue 10/13", label:"Osaka \u2192 Koyasan", stops:[
   {type:"hotel", title:"Koyasan Shukubo Daimyoin", nights:"1 night", loc:"Koyasan Shukubo Daimyoin, Koyasan", link:M("Koyasan Shukubo Daimyoin")},
 ]},
-{ n:10, photo:IMG_NARA, id:"d10", date:"Wed 10/14", label:"Koyasan \u2192 Nara", stops:[
+{ n:10, id:"d10", date:"Wed 10/14", label:"Koyasan \u2192 Nara", stops:[
   {type:"hotel", title:"Hotel Asyl Nara", nights:"1 night", loc:"Hotel Asyl Nara, Nara", link:M("Hotel Asyl Nara")},
 ]},
-{ n:11, photo:IMG_TOKYO, id:"d11", date:"Thu 10/15", label:"Nara \u2192 Tokyo", stops:[
+{ n:11, id:"d11", date:"Thu 10/15", label:"Nara \u2192 Tokyo", stops:[
   {type:"hotel", title:"ELE Hotel", nights:"5 nights", loc:"ELE Hotel Tokyo", link:M("ELE Hotel Tokyo")},
 ]},
-{ n:12, photo:IMG_TOKYO, date:"Fri 10/16", label:"Tokyo \u2014 Asakusa/Skytree \u2192 teamLab Planets", stops:[
+{ n:12, date:"Fri 10/16", label:"Tokyo \u2014 Asakusa/Skytree \u2192 teamLab Planets", stops:[
 ]},
-{ n:13, photo:IMG_TOKYO, date:"Sat 10/17", label:"Tokyo \u2014 Ghibli \u2192 Shinjuku \u2192 Shibuya", stops:[
+{ n:13, date:"Sat 10/17", label:"Tokyo \u2014 Ghibli \u2192 Shinjuku \u2192 Shibuya", stops:[
 ]},
-{ n:14, photo:IMG_NIKKO, id:"d14", date:"Sun 10/18", label:"Nikko day trip", stops:[
+{ n:14, id:"d14", date:"Sun 10/18", label:"Nikko day trip", stops:[
   // train travel will be replaced by CSV entries
 ]},
-{ n:15, photo:IMG_TOKYO, date:"Mon 10/19", label:"Tokyo \u2014 Roppongi/Azabudai \u2192 Ginza", stops:[
+{ n:15, date:"Mon 10/19", label:"Tokyo \u2014 Roppongi/Azabudai \u2192 Ginza", stops:[
 ]},
-{ n:16, photo:IMG_TOKYO, date:"Tue 10/20", label:"Depart \u2014 Asakusa \u2192 Haneda", stops:[
+{ n:16, date:"Tue 10/20", label:"Depart \u2014 Asakusa \u2192 Haneda", stops:[
 ]}
 ];
 
 // Helper: trip start for ISO matching (CSV uses 2026-10-05 as first day)
 const TRIP_START_ISO = '2026-10-05';
 function addDaysISO(iso, n){
-  const d = new Date(iso + 'T00:00:00');
+  // Parse as UTC explicitly (note the 'Z') so this is immune to the browser's
+  // local timezone -- without it, "T00:00:00" is parsed as local time but then
+  // read/written back with the UTC getters/setters below, which silently shifts
+  // every date by a day for anyone not in UTC+0 (e.g. UK on BST).
+  const d = new Date(iso + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0,10);
 }
 function getDayIso(n){ return addDaysISO(TRIP_START_ISO, n-1); }
 
-document.getElementById('hero').style.setProperty('--hero-photo', 'url(' + HERO_IMG + ')');
+document.getElementById('hero').style.setProperty('--hero-photo', 'url(' + IMG_AUTUMN + ')');
 
 const sidebar = document.getElementById('sidebar');
 const daysEl = document.getElementById('days');
@@ -586,6 +589,7 @@ function renderWithCsv(rows){
     if(d.id) sec.setAttribute('data-city', d.id);
 
     const cityTitle = CITY_TITLE[d.n] || d.label;
+    const dayPhoto = dayPhotoFor(cityTitle);
     const hotel = HOTELS[DAY_HOTEL[d.n]];
     const hotelLink = hotel ? M(hotel.loc) : null;
     const prevKey = DAY_HOTEL[d.n - 1];
@@ -593,8 +597,8 @@ function renderWithCsv(rows){
     const startHotelLink = startHotel ? M(startHotel.loc) : null;
 
     let html = '';
-    if(d.photo){
-      html += '<div class="dayhero" style="background-image:url('+d.photo+')">';
+    if(dayPhoto){
+      html += '<div class="dayhero" style="background-image:url('+dayPhoto+')">';
       html += '<div class="dayhead"><span class="num">DAY '+String(d.n).padStart(2,'0')+'</span><span class="date">'+d.date+'</span></div>';
       html += '<h2>'+escapeHtml(cityTitle)+'</h2>';
       if(hotel){
