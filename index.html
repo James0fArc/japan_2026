@@ -399,6 +399,7 @@ const days = [
 { n:15, photo:IMG_TOKYO, date:"Mon 10/19", label:"Tokyo \u2014 Roppongi/Azabudai \u2192 Ginza", stops:[
 ]},
 { n:16, photo:IMG_TOKYO, date:"Tue 10/20", label:"Depart \u2014 Asakusa \u2192 Haneda", stops:[
+  {type:"train", t:"9:30", from:"Asakusa", to:"Haneda Airport", name:"Keikyu/Toei Asakusa Line", price:"\u00a5610", photo:IMG_TRAIN_KEIKYU, loc:"Haneda Airport, Tokyo"},
 ]}
 ];
 
@@ -443,93 +444,14 @@ function escapeHtml(str) {
 
 function photoFromKey(key){
   if(!key) return null;
-  return 'images/' + key + '.jpg';
+  const varName = 'IMG_' + key.toUpperCase();
+  return window[varName] || null;
 }
 
 function parseFromTo(text){
   if(!text) return {from:'', to:''};
   const parts = text.split(/->|→|–|—/).map(s=>s.trim());
   return { from: parts[0] || '', to: parts[1] || '' };
-}
-
-// Maps an entry's category to the CSS card class that renders it.
-// Unknown/other categories fall back to the plain "stop" card (no photo support).
-function cardClassFor(category){
-  if(category === 'travel') return 'traincard';
-  if(category === 'booked') return 'bookedcard';
-  if(category === 'planned') return 'plannedcard';
-  return null;
-}
-
-// Small label shown above the title. Derived from category, but travel rows
-// override to Plane/Train based on whether the photo key references a plane.
-function eyebrowFor(r){
-  if(r.category === 'travel'){
-    return (r.photo || '').toLowerCase().indexOf('plane') > -1 ? 'Plane' : 'Train';
-  }
-  if(!r.category) return '';
-  return r.category.charAt(0).toUpperCase() + r.category.slice(1);
-}
-
-// Reads a single entries.csv row and renders it using the existing visual cards
-// (traincard / bookedcard / plannedcard / generic stop). Field rules:
-//  - title = description (travel splits it into a From -> To route)
-//  - time (if given) shown above the title
-//  - subtitle = name if given, otherwise location
-//  - url (if given) becomes a link button
-//  - photo (if given) placed on the right, fading in from the left
-//  - notes (if given) shown in italics at the bottom of the card
-function buildEntryCardHtml(r){
-  const cls = cardClassFor(r.category);
-  const photo = photoFromKey(r.photo);
-  const link = r.url || '';
-  const notes = r.notes || '';
-  const time = r.time || '';
-  const subtitle = r.name || r.location || '';
-
-  if(!cls){
-    // Fallback for unrecognised categories: the plain stop card (no photo support).
-    let html = '<div class="stop"><div class="icon">\ud83d\udccc</div><div class="body">';
-    if(time) html += '<div class="time">'+escapeHtml(time)+'</div>';
-    html += '<div class="title">'+escapeHtml(r.description||'')+'</div>';
-    if(subtitle) html += '<div class="blurb">'+escapeHtml(subtitle)+'</div>';
-    if(link){
-      const isMap = link.indexOf('google.com/maps') > -1;
-      html += '<div class="row"><a class="btn '+(isMap?'map':'site')+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a></div>';
-    }
-    if(notes) html += '<div class="notes">'+escapeHtml(notes)+'</div>';
-    html += '</div></div>';
-    return html;
-  }
-
-  const eyebrow = eyebrowFor(r);
-  let titleHtml;
-  if(r.category === 'travel'){
-    const ft = parseFromTo(r.description);
-    titleHtml = '<div class="stops">'+escapeHtml(ft.from)+'<span class="arrow">\u2192</span>'+escapeHtml(ft.to)+'</div>';
-  } else {
-    titleHtml = '<div class="name">'+escapeHtml(r.description||'')+'</div>';
-  }
-
-  let html = '<div class="'+cls+(photo?'':' nophoto')+'"><div class="cardrow">';
-  html += '<div class="route">';
-  if(time) html += '<div class="time">'+escapeHtml(time)+'</div>';
-  html += '<div class="eyebrow">'+escapeHtml(eyebrow)+'</div>';
-  html += titleHtml;
-  if(subtitle) html += '<div class="meta">'+escapeHtml(subtitle)+'</div>';
-  if(link){
-    const isMap = link.indexOf('google.com/maps') > -1;
-    const btnCls = r.category === 'travel' ? 'site' : (isMap ? 'map' : 'activity');
-    html += '<div class="row"><a class="btn '+btnCls+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a></div>';
-  }
-  html += '</div>'; // .route
-  if(photo){
-    html += '<div class="photo" style="background-image:url('+photo+')"><div class="name">'+escapeHtml(r.name || r.description || '')+'</div></div>';
-  }
-  html += '</div>'; // .cardrow
-  if(notes) html += '<div class="cardnotes">'+escapeHtml(notes)+'</div>';
-  html += '</div>'; // card
-  return html;
 }
 
 function buildRouteUrl(locs){
@@ -624,23 +546,88 @@ function renderWithCsv(rows){
       }
     }
 
-    // Read this day's rows straight from entries.csv (travel rows first, matching
-    // the original card ordering), then render each with buildEntryCardHtml,
-    // which picks the right existing visual card for the row's category.
+    // Build travel & other CSV-driven stops for this day
     const iso = getDayIso(d.n);
-    const dayEntries = entries.filter(e => e.date === iso);
-    const travelRows = dayEntries.filter(e => e.category === 'travel');
-    const otherRows = dayEntries.filter(e => e.category !== 'travel');
-    const orderedRows = [...travelRows, ...otherRows];
+    const travelRows = entries.filter(e => e.category === 'travel' && e.date === iso);
+    const otherRows = entries.filter(e => e.category !== 'travel' && e.date === iso);
 
-    orderedRows.forEach(r => { html += buildEntryCardHtml(r); });
+    // Convert CSV travel rows into stop objects
+    const travelStops = travelRows.map(r => {
+      const ft = parseFromTo(r.description || r.name);
+      return {
+        type: 'train',
+        t: r.time || '',
+        from: ft.from,
+        to: ft.to,
+        name: r.name || '',
+        photo: photoFromKey(r.photo),
+        loc: r.location || '',
+        link: r.url || '',
+        title: r.name || r.description || ''
+      };
+    });
 
-    // Any hardcoded non-CSV stops for the day (currently only hotel entries,
-    // rendered separately above) still count toward the day's route.
+    // Convert other CSV rows into generic 'stop' items
+    const otherStops = otherRows.map(r => ({
+      type: 'stop',
+      t: r.time || '',
+      title: r.name || r.description || '',
+      blurb: r.notes || r.description || '',
+      link: r.url || '',
+      loc: r.location || '',
+      raw: r
+    }));
+
+    // Combine: put travel stops first, then any hardcoded non-train stops from days.stops
     const hardStops = (d.stops || []).filter(s => s.type !== 'train' && s.type !== 'travel');
+    const combinedStops = [...travelStops, ...otherStops, ...hardStops];
 
-    // build route url from this day's entries + hardcoded hotel stops
-    const locs = [...dayEntries.filter(e=>e.location).map(e=>e.location), ...hardStops.filter(s=>s.loc).map(s=>s.loc)];
+    combinedStops.forEach(s=>{
+      if(s.type==='hotel') return;
+      if(s.type==='train'){
+        const cls = s.photo ? 'traincard' : 'traincard nophoto';
+        html += '<div class="'+cls+'">';
+        html += '<div class="route"><div class="eyebrow">'+(s.name==='Flight'?'Plane':'Train')+'</div>';
+        html += '<div class="stops">'+escapeHtml(s.from)+'<span class="arrow">\u2192</span>'+escapeHtml(s.to)+'</div>';
+        html += '<div class="meta">'+escapeHtml(s.name)+(s.price?' \u00b7 '+escapeHtml(s.price):'')+'</div>';
+        html += '<div class="row">';
+        if(s.link) html += '<a class="btn site" href="'+escapeHtml(s.link)+'" target="_blank">Site \u2197</a>';
+        html += '</div></div>';
+        if(s.photo){
+          html += '<div class="photo" style="background-image:url('+s.photo+')"><div class="name">'+escapeHtml(s.name)+'</div></div>';
+        }
+        html += '</div>';
+      } else if(s.type==='booked'){
+        const cls = s.photo ? 'bookedcard' : 'bookedcard nophoto';
+        html += '<div class="'+cls+'">';
+        html += '<div class="route"><div class="eyebrow">Booked</div>';
+        html += '<div class="name">'+escapeHtml(s.name)+'</div>';
+        if(s.meta) html += '<div class="meta">'+escapeHtml(s.meta)+'</div>';
+        html += '<div class="row">';
+        if(s.activityLink) html += '<a class="btn activity" href="'+escapeHtml(s.activityLink)+'" target="_blank">Site \u2197</a>';
+        if(s.mapLink) html += '<a class="btn map" href="'+escapeHtml(s.mapLink)+'" target="_blank">Map \u2197</a>';
+        html += '</div></div>';
+        if(s.photo){
+          html += '<div class="photo" style="background-image:url('+s.photo+')"><div class="name">'+escapeHtml(s.name)+'</div></div>';
+        }
+        html += '</div>';
+      } else if(s.type==='travel'){
+        html += '<div class="travel"><div class="icon">'+(s.icon||'')+'</div><div class="body"><div class="eyebrow">Travel</div><div class="title">'+escapeHtml(s.title)+(s.blurb?' \u2014 '+escapeHtml(s.blurb):'')+'</div></div>';
+        html += (s.link ? '<a class="btn '+(s.link.indexOf('google.com/maps')>-1?'map':'site')+'" href="'+escapeHtml(s.link)+'" target="_blank">'+(s.link.indexOf('google.com/maps')>-1?'Map':'Site')+' \u2197</a>' : '');
+        html += (s.book ? '<span class="tag">Book ahead</span>' : '')+'</div>';
+      } else { // generic stop
+        html += '<div class="stop"><div class="icon">\ud83d\udccc</div><div class="body">';
+        if(s.t) html += '<div class="time">'+escapeHtml(s.t)+'</div>';
+        html += '<div class="title">'+escapeHtml(s.title)+'</div>';
+        if(s.blurb) html += '<div class="blurb">'+escapeHtml(s.blurb)+'</div>';
+        html += '<div class="row">';
+        if(s.link) html += '<a class="btn '+(s.link.indexOf('google.com/maps')>-1?'map':'site')+'" href="'+escapeHtml(s.link)+'" target="_blank">'+(s.link.indexOf('google.com/maps')>-1?'Map':'Site')+' \u2197</a>';
+        html += '</div></div></div>';
+      }
+    });
+
+    // build route url from combinedStops
+    const locs = combinedStops.filter(s=>s.loc).map(s=>s.loc);
     const uniqueLocs = locs.filter((v,i)=>locs.indexOf(v)===i || i===0 || i===locs.length-1);
     const routeUrl = buildRouteUrl(uniqueLocs.length ? uniqueLocs : locs);
     html += '<a class="routebtn" href="'+routeUrl+'" target="_blank">View today\u2019s route on Google Maps \u2197</a>';
