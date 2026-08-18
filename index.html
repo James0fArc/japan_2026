@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c8102e">
 <title>Japan Trip — Oct 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -721,6 +723,15 @@ fetch('entries.csv')
     // fallback: render without CSV (will render only hardcoded hotel stops)
     renderWithCsv([]);
   });
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Service worker registered'))
+        .catch((err) => console.error('SW registration failed:', err));
+    });
+  }
 </script>
 </body>
 </html>
