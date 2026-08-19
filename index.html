@@ -287,6 +287,11 @@
   .hotelrow .hotel{margin:0;flex:1;min-width:230px;} 
   .hotelrow .arrow{color:var(--text-muted);font-size:18px;flex:0 0 auto;} 
 
+  /* Confirmed/unconfirmed border override — applies on top of any card's own
+     border color, to .stop, .travel, .traincard, .bookedcard and .plannedcard alike. */
+  .confirmed{border-style:solid;border-width:3px;}
+  .unconfirmed{border-style:dashed;border-width:1px;}
+
   .routebtn{
     display:inline-flex;align-items:center;gap:8px;margin-top:8px;
     background:var(--momiji);color:#1A0C05;text-decoration:none;font-weight:700;font-size:13px;
@@ -485,19 +490,29 @@ function buildEntryCardHtml(r){
   const cls = cardClassFor(r.category);
   const photo = photoFromKey(r.photo);
   const link = r.url || '';
+  const mapsLink = r.maps_link || '';
   const notes = r.notes || '';
   const time = r.time || '';
   const subtitle = r.name || r.location || '';
+  // Defaults to unconfirmed unless the CSV explicitly says "confirmed".
+  const confirmedClass = (r.confirmed || '').toLowerCase() === 'confirmed' ? 'confirmed' : 'unconfirmed';
 
   if(!cls){
     // Fallback for unrecognised categories: the plain stop card (no photo support).
-    let html = '<div class="stop"><div class="icon">\ud83d\udccc</div><div class="body">';
+    let html = '<div class="stop '+confirmedClass+'"><div class="icon">\ud83d\udccc</div><div class="body">';
     if(time) html += '<div class="time">'+escapeHtml(time)+'</div>';
     html += '<div class="title">'+escapeHtml(r.description||'')+'</div>';
     if(subtitle) html += '<div class="blurb">'+escapeHtml(subtitle)+'</div>';
-    if(link){
-      const isMap = link.indexOf('google.com/maps') > -1;
-      html += '<div class="row"><a class="btn '+(isMap?'map':'site')+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a></div>';
+    if(link || mapsLink){
+      html += '<div class="row">';
+      if(link){
+        const isMap = link.indexOf('google.com/maps') > -1;
+        html += '<a class="btn '+(isMap?'map':'site')+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a>';
+      }
+      if(mapsLink){
+        html += '<a class="btn map" href="'+escapeHtml(mapsLink)+'" target="_blank">Map \u2197</a>';
+      }
+      html += '</div>';
     }
     if(notes) html += '<div class="notes">'+escapeHtml(notes)+'</div>';
     html += '</div></div>';
@@ -513,16 +528,23 @@ function buildEntryCardHtml(r){
     titleHtml = '<div class="name">'+escapeHtml(r.description||'')+'</div>';
   }
 
-  let html = '<div class="'+cls+(photo?'':' nophoto')+'"><div class="cardrow">';
+  let html = '<div class="'+cls+(photo?'':' nophoto')+' '+confirmedClass+'"><div class="cardrow">';
   html += '<div class="route">';
   if(time) html += '<div class="time">'+escapeHtml(time)+'</div>';
   html += '<div class="eyebrow">'+escapeHtml(eyebrow)+'</div>';
   html += titleHtml;
   if(subtitle) html += '<div class="meta">'+escapeHtml(subtitle)+'</div>';
-  if(link){
-    const isMap = link.indexOf('google.com/maps') > -1;
-    const btnCls = r.category === 'travel' ? 'site' : (isMap ? 'map' : 'activity');
-    html += '<div class="row"><a class="btn '+btnCls+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a></div>';
+  if(link || mapsLink){
+    html += '<div class="row">';
+    if(link){
+      const isMap = link.indexOf('google.com/maps') > -1;
+      const btnCls = r.category === 'travel' ? 'site' : (isMap ? 'map' : 'activity');
+      html += '<a class="btn '+btnCls+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a>';
+    }
+    if(mapsLink){
+      html += '<a class="btn map" href="'+escapeHtml(mapsLink)+'" target="_blank">Map \u2197</a>';
+    }
+    html += '</div>';
   }
   html += '</div>'; // .route
   if(photo){
