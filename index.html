@@ -468,6 +468,24 @@ function cardClassFor(category){
   return null;
 }
 
+// Icon shown on unplanned entries, keyed by the "name" field which now denotes
+// the activity type (Hike / Culture / Nature / Urban) rather than a place name.
+// Matching is case-insensitive; anything unrecognised (e.g. "Temple") falls
+// back to the default pin in stopIconFor below.
+const UNPLANNED_TYPE_ICONS = {
+  hike: '\ud83e\udd7e',      // hiking boot
+  culture: '\u26e9\ufe0f',   // torii gate
+  nature: '\ud83c\udf3f',    // leaf
+  urban: '\ud83c\udfd9\ufe0f' // cityscape/building
+};
+function stopIconFor(r){
+  if(r.category === 'unplanned'){
+    const key = (r.name || '').trim().toLowerCase();
+    if(UNPLANNED_TYPE_ICONS[key]) return UNPLANNED_TYPE_ICONS[key];
+  }
+  return '\ud83d\udccc'; // default pin
+}
+
 // Small label shown above the title. Derived from category, but travel rows
 // override to Plane/Train based on whether the photo key references a plane.
 function eyebrowFor(r){
@@ -493,13 +511,16 @@ function buildEntryCardHtml(r){
   const mapsLink = r.maps_link || '';
   const notes = r.notes || '';
   const time = r.time || '';
-  const subtitle = r.name || r.location || '';
+  // For unplanned entries, "name" now holds the activity type (Hike/Culture/
+  // Nature/Urban) used to pick an icon, not a display name -- so show the
+  // location as the subtitle instead of repeating the type as text.
+  const subtitle = r.category === 'unplanned' ? (r.location || '') : (r.name || r.location || '');
   // Defaults to unconfirmed unless the CSV explicitly says "confirmed".
   const confirmedClass = (r.confirmed || '').toLowerCase() === 'confirmed' ? 'confirmed' : 'unconfirmed';
 
   if(!cls){
     // Fallback for unrecognised categories: the plain stop card (no photo support).
-    let html = '<div class="stop '+confirmedClass+'"><div class="icon">\ud83d\udccc</div><div class="body">';
+    let html = '<div class="stop '+confirmedClass+'"><div class="icon">'+stopIconFor(r)+'</div><div class="body">';
     if(time) html += '<div class="time">'+escapeHtml(time)+'</div>';
     html += '<div class="title">'+escapeHtml(r.description||'')+'</div>';
     if(subtitle) html += '<div class="blurb">'+escapeHtml(subtitle)+'</div>';
