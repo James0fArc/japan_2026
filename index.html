@@ -253,7 +253,7 @@
   }
   .plannedcard .photo::before{
     content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg, rgba(226,97,47,0.10) 0%, rgba(31,23,18,0) 55%);
+    background:linear-gradient(90deg, var(--surface) 0%, rgba(31,23,18,0) 55%);
   }
   .plannedcard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -327,7 +327,7 @@
     <a href="#day9">Koyasan</a>
     <a href="#day10">Nara</a>
     <a href="#day11">Tokyo</a>
-    <a href="#day14">Nikko</a>
+    <a href="#day12">Nikko</a>
   </nav>
   <a class="navcta" href="#day1">Day one &darr;</a>
 </header>
@@ -392,11 +392,11 @@ const days = [
 { n:11, id:"d11", date:"Thu 10/15", label:"Nara \u2192 Tokyo", stops:[
   {type:"hotel", title:"ELE Hotel", nights:"5 nights", loc:"ELE Hotel Tokyo", link:M("ELE Hotel Tokyo")},
 ]},
-{ n:12, date:"Fri 10/16", label:"Tokyo \u2014 Asakusa/Skytree \u2192 teamLab Planets", stops:[
+{ n:12, id:"d12", date:"Fri 10/16", label:"Nikko day trip", stops:[
 ]},
-{ n:13, date:"Sat 10/17", label:"Tokyo \u2014 Ghibli \u2192 Shinjuku \u2192 Shibuya", stops:[
+{ n:13, date:"Sat 10/17", label:"Tokyo \u2014 Shinjuku \u2192 Shibuya", stops:[
 ]},
-{ n:14, id:"d14", date:"Sun 10/18", label:"Nikko day trip", stops:[
+{ n:14, date:"Sun 10/18", label:"Tokyo \u2014 Ghibli, Imperial Palace & Akihabara", stops:[
   // train travel will be replaced by CSV entries
 ]},
 { n:15, date:"Mon 10/19", label:"Tokyo \u2014 Roppongi/Azabudai \u2192 Ginza", stops:[
@@ -439,8 +439,8 @@ const DAY_HOTEL = {
 
 const CITY_TITLE = {
   1:"Yokohama", 2:"Hakone", 3:"Hakone", 4:"Kyoto", 5:"Kyoto", 6:"Kyoto",
-  7:"Kyoto", 8:"Osaka", 9:"Koyasan", 10:"Nara", 11:"Tokyo", 12:"Tokyo",
-  13:"Tokyo", 14:"Nikko", 15:"Tokyo", 16:"Tokyo"
+  7:"Kyoto", 8:"Osaka", 9:"Koyasan", 10:"Nara", 11:"Tokyo", 12:"Nikko",
+  13:"Tokyo", 14:"Tokyo", 15:"Tokyo", 16:"Tokyo"
 };
 
 // small helper to avoid HTML injection
@@ -496,6 +496,20 @@ function eyebrowFor(r){
   return r.category.charAt(0).toUpperCase() + r.category.slice(1);
 }
 
+// Builds the Map button(s) for an entry. Travel rows get two links (start
+// and end point) when both maps_link_1/2 are populated; every other category
+// only ever has maps_link_1 filled in, so it renders as a single Map button.
+function mapButtonsHtml(r){
+  const m1 = r.maps_link_1 || '';
+  const m2 = r.maps_link_2 || '';
+  if(!m1 && !m2) return '';
+  if(r.category === 'travel' && m1 && m2){
+    return '<a class="btn map" href="'+escapeHtml(m1)+'" target="_blank">Start \u2197</a>'
+         + '<a class="btn map" href="'+escapeHtml(m2)+'" target="_blank">End \u2197</a>';
+  }
+  return '<a class="btn map" href="'+escapeHtml(m1 || m2)+'" target="_blank">Map \u2197</a>';
+}
+
 // Reads a single entries.csv row and renders it using the existing visual cards
 // (traincard / bookedcard / plannedcard / generic stop). Field rules:
 //  - title = description (travel splits it into a From -> To route)
@@ -508,7 +522,6 @@ function buildEntryCardHtml(r){
   const cls = cardClassFor(r.category);
   const photo = photoFromKey(r.photo);
   const link = r.url || '';
-  const mapsLink = r.maps_link || '';
   const notes = r.notes || '';
   const time = r.time || '';
   // For unplanned entries, "name" now holds the activity type (Hike/Culture/
@@ -524,15 +537,14 @@ function buildEntryCardHtml(r){
     if(time) html += '<div class="time">'+escapeHtml(time)+'</div>';
     html += '<div class="title">'+escapeHtml(r.description||'')+'</div>';
     if(subtitle) html += '<div class="blurb">'+escapeHtml(subtitle)+'</div>';
-    if(link || mapsLink){
+    const mapBtns1 = mapButtonsHtml(r);
+    if(link || mapBtns1){
       html += '<div class="row">';
       if(link){
         const isMap = link.indexOf('google.com/maps') > -1;
         html += '<a class="btn '+(isMap?'map':'site')+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a>';
       }
-      if(mapsLink){
-        html += '<a class="btn map" href="'+escapeHtml(mapsLink)+'" target="_blank">Map \u2197</a>';
-      }
+      html += mapBtns1;
       html += '</div>';
     }
     if(notes) html += '<div class="notes">'+escapeHtml(notes)+'</div>';
@@ -555,16 +567,15 @@ function buildEntryCardHtml(r){
   html += '<div class="eyebrow">'+escapeHtml(eyebrow)+'</div>';
   html += titleHtml;
   if(subtitle) html += '<div class="meta">'+escapeHtml(subtitle)+'</div>';
-  if(link || mapsLink){
+  const mapBtns2 = mapButtonsHtml(r);
+  if(link || mapBtns2){
     html += '<div class="row">';
     if(link){
       const isMap = link.indexOf('google.com/maps') > -1;
       const btnCls = r.category === 'travel' ? 'site' : (isMap ? 'map' : 'activity');
       html += '<a class="btn '+btnCls+'" href="'+escapeHtml(link)+'" target="_blank">'+(isMap?'Map':'Site')+' \u2197</a>';
     }
-    if(mapsLink){
-      html += '<a class="btn map" href="'+escapeHtml(mapsLink)+'" target="_blank">Map \u2197</a>';
-    }
+    html += mapBtns2;
     html += '</div>';
   }
   html += '</div>'; // .route
@@ -670,16 +681,13 @@ function renderWithCsv(rows){
       }
     }
 
-    // Read this day's rows straight from entries.csv (travel rows first, matching
-    // the original card ordering), then render each with buildEntryCardHtml,
-    // which picks the right existing visual card for the row's category.
+    // Read this day's rows straight from entries.csv, in the exact order they
+    // appear in the file -- the CSV row order is now the source of truth for
+    // how activities interleave with travel within a day.
     const iso = getDayIso(d.n);
     const dayEntries = entries.filter(e => e.date === iso);
-    const travelRows = dayEntries.filter(e => e.category === 'travel');
-    const otherRows = dayEntries.filter(e => e.category !== 'travel');
-    const orderedRows = [...travelRows, ...otherRows];
 
-    orderedRows.forEach(r => { html += buildEntryCardHtml(r); });
+    dayEntries.forEach(r => { html += buildEntryCardHtml(r); });
 
     // Any hardcoded non-CSV stops for the day (currently only hotel entries,
     // rendered separately above) still count toward the day's route.
