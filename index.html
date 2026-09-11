@@ -199,7 +199,11 @@
   }
   .traincard .photo::before{
     content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg, var(--surface) 0%, rgba(31,23,18,0) 55%);
+    background:linear-gradient(90deg,
+      var(--surface) 0%, var(--surface) 12%,
+      rgba(31,23,18,0.92) 26%, rgba(31,23,18,0.72) 40%,
+      rgba(31,23,18,0.46) 55%, rgba(31,23,18,0.22) 70%,
+      rgba(31,23,18,0) 88%);
   }
   .traincard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -226,7 +230,11 @@
   }
   .bookedcard .photo::before{
     content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg, rgba(76,175,80,0.09) 0%, rgba(31,23,18,0) 55%);
+    background:linear-gradient(90deg,
+      var(--surface) 0%, var(--surface) 12%,
+      rgba(31,23,18,0.92) 26%, rgba(31,23,18,0.72) 40%,
+      rgba(31,23,18,0.46) 55%, rgba(31,23,18,0.22) 70%,
+      rgba(31,23,18,0) 88%);
   }
   .bookedcard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -253,7 +261,11 @@
   }
   .plannedcard .photo::before{
     content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg, var(--surface) 0%, rgba(31,23,18,0) 55%);
+    background:linear-gradient(90deg,
+      var(--surface) 0%, var(--surface) 12%,
+      rgba(31,23,18,0.92) 26%, rgba(31,23,18,0.72) 40%,
+      rgba(31,23,18,0.46) 55%, rgba(31,23,18,0.22) 70%,
+      rgba(31,23,18,0) 88%);
   }
   .plannedcard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -714,13 +726,17 @@ function buildEntryCardHtml(r){
     html += mapBtns2;
     html += '</div>';
   }
+  // Booking pill lives inside .route (not as a full-width strip below the
+  // row) so it stays confined to the left column and never overlaps the
+  // photo -- the photo then stretches (via .cardrow's align-items:stretch)
+  // to match whatever height .route ends up needing, booking pill included.
+  if(r._booking) html += privateRowHtml(r);
   html += '</div>'; // .route
   if(photo){
     html += '<div class="photo" style="background-image:url('+photo+')"><div class="name">'+escapeHtml(r.name || r.description || '')+'</div></div>';
   }
   html += '</div>'; // .cardrow
   if(notes) html += '<div class="cardnotes">'+escapeHtml(notes)+'</div>';
-  if(r._booking) html += '<div style="padding:0 18px 14px;">'+privateRowHtml(r)+'</div>';
   html += '</div>'; // card
   return html;
 }
