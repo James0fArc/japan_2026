@@ -301,6 +301,49 @@
 
   footer{text-align:center;padding:40px;color:var(--text-muted);font-size:12px;border-top:1px solid var(--border);} 
 
+  .navlock{display:flex;align-items:center;gap:10px;}
+  .lockbtn{
+    width:34px;height:34px;border-radius:50%;border:1px solid var(--border-strong);
+    background:transparent;color:var(--text-secondary);font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s;
+  }
+  .lockbtn:hover{color:var(--text);border-color:var(--text-secondary);}
+  .lockbtn.unlocked{color:#66BB6A;border-color:rgba(76,175,80,0.55);}
+  .lockpanel{
+    position:absolute;top:64px;right:40px;z-index:60;width:260px;
+    background:var(--surface-2);border:1px solid var(--border-strong);border-radius:14px;
+    padding:16px;box-shadow:0 12px 30px rgba(0,0,0,0.4);
+  }
+  .lockpanel.hidden{display:none;}
+  .lockpanel p{font-size:12.5px;color:var(--text-secondary);margin-bottom:10px;line-height:1.4;}
+  .lockpanel input{
+    width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--border-strong);
+    background:var(--surface);color:var(--text);font-size:13px;margin-bottom:8px;
+  }
+  .lockpanel .row{display:flex;gap:8px;}
+  .lockpanel button.submit{
+    flex:1;background:var(--momiji);color:#1A0C05;border:none;border-radius:8px;
+    font-weight:700;font-size:12.5px;padding:9px 0;cursor:pointer;
+  }
+  .lockpanel button.cancel{
+    background:transparent;border:1px solid var(--border-strong);color:var(--text-secondary);
+    border-radius:8px;font-size:12.5px;padding:9px 12px;cursor:pointer;
+  }
+  .lockpanel .err{font-size:11.5px;color:#E2612F;margin-top:6px;display:none;}
+  .lockpanel .clearlink{
+    display:block;margin-top:10px;font-size:11.5px;color:var(--text-muted);
+    text-decoration:underline;cursor:pointer;
+  }
+  .lockpanel .clearlink.hidden{display:none;}
+
+  .btn.activity{color:#66BB6A;border-color:rgba(76,175,80,0.45);}
+  .privaterow{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;padding:8px 12px;
+    background:rgba(76,175,80,0.09);border:1px solid rgba(76,175,80,0.3);border-radius:10px;
+  }
+  .privaterow .lbl{font-size:11px;font-weight:700;color:#66BB6A;white-space:nowrap;}
+  .privaterow .val{font-size:12px;color:var(--text);font-family:'JetBrains Mono',monospace;flex:1;min-width:0;overflow-wrap:anywhere;}
+
   @media (max-width:860px){
     header.nav{padding:14px 20px;} 
     nav.cities{display:none;} 
@@ -329,8 +372,22 @@
     <a href="#day11">Tokyo</a>
     <a href="#day12">Nikko</a>
   </nav>
-  <a class="navcta" href="#day1">Day one &darr;</a>
+  <div class="navlock">
+    <button class="lockbtn" id="lockBtn" type="button" title="Unlock booking details">&#128274;</button>
+    <a class="navcta" href="#day1">Day one &darr;</a>
+  </div>
 </header>
+
+<div class="lockpanel hidden" id="lockPanel">
+  <p>Enter the passphrase to show booking confirmations and private reservation links on this device. Everyone else just sees the normal public itinerary.</p>
+  <input type="password" id="lockInput" placeholder="Passphrase" autocomplete="off">
+  <div class="row">
+    <button class="submit" id="lockSubmit" type="button">Unlock</button>
+    <button class="cancel" id="lockCancel" type="button">Cancel</button>
+  </div>
+  <div class="err" id="lockErr">Incorrect passphrase.</div>
+  <span class="clearlink hidden" id="lockClear">Forget passphrase on this device</span>
+</div>
 
 <section class="hero" id="hero">
   <p class="eyebrow">5 &ndash; 20 October 2026</p>
@@ -352,6 +409,22 @@
 <script>
 const IMG_AUTUMN = "images/autumn.jpg";
 const M = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+
+// --- Private booking overlay --------------------------------------------
+// Booking confirmations and private reservation links never ship in
+// entries.csv (which is public, cached offline, and fetchable by anyone
+// with the page URL). Instead they live only in a small Cloudflare Worker
+// that returns them exclusively when the right passphrase is supplied.
+// See /worker/bookings-worker.js and SETUP.md for how to deploy it, then
+// replace the URL below with your deployed Worker's address.
+const BOOKINGS_WORKER_URL = "https://REPLACE-ME.workers.dev/bookings";
+const BOOKING_TOKEN_KEY = "jpTripBookingToken";
+// Once unlocked, the bookings JSON itself is cached alongside the token so
+// confirmation numbers and reservation links keep showing even with no
+// signal (e.g. mid-trip, checking a hotel confirmation offline) -- the page
+// re-fetches quietly in the background whenever it can reach the Worker,
+// to pick up anything added/changed since.
+const BOOKINGS_CACHE_KEY = "jpTripBookingsCache";
 
 // Derives a day's header photo from its city name, e.g. "Kyoto" -> images/kyoto.jpg.
 // Keeps day photos on the same dynamic, key-based system as entry photos (photoFromKey)
@@ -512,6 +585,20 @@ function mapButtonsHtml(r){
   return '<a class="btn map" href="'+escapeHtml(m1 || m2)+'" target="_blank">Map \u2197</a>';
 }
 
+// Renders the private booking pill (confirmation number / reservation link)
+// for an entry, when one is present. r._booking is only ever set when the
+// booking overlay has been unlocked for this row (see BOOKINGS_WORKER_URL
+// below) -- entries.csv itself never contains this data.
+function privateRowHtml(r){
+  if(!r._booking) return '';
+  const b = r._booking;
+  let html = '<div class="privaterow"><span class="lbl">&#128274; Booking</span>';
+  if(b.confirmation) html += '<span class="val">'+escapeHtml(b.confirmation)+'</span>';
+  if(b.booking_url) html += '<a class="btn activity" href="'+escapeHtml(b.booking_url)+'" target="_blank">Open ↗</a>';
+  html += '</div>';
+  return html;
+}
+
 // Reads a single entries.csv row and renders it using the existing visual cards
 // (traincard / bookedcard / plannedcard / generic stop). Field rules:
 //  - title = description (travel splits it into a From -> To route)
@@ -550,6 +637,7 @@ function buildEntryCardHtml(r){
       html += '</div>';
     }
     if(notes) html += '<div class="notes">'+escapeHtml(notes)+'</div>';
+    html += privateRowHtml(r);
     html += '</div></div>';
     return html;
   }
@@ -586,6 +674,7 @@ function buildEntryCardHtml(r){
   }
   html += '</div>'; // .cardrow
   if(notes) html += '<div class="cardnotes">'+escapeHtml(notes)+'</div>';
+  if(r._booking) html += '<div style="padding:0 18px 14px;">'+privateRowHtml(r)+'</div>';
   html += '</div>'; // card
   return html;
 }
@@ -603,21 +692,38 @@ function buildRouteUrl(locs){
   return url;
 }
 
-// Render helpers reused from original file
+// Render helpers reused from original file. h._booking (confirmation number /
+// private reservation link) is only set once the booking overlay is unlocked.
 function heroCard(h, link){
-  return '<a class="herohotel" href="'+link+'" target="_blank"><span class="icon">\ud83c\udfe8</span><div><div class="name">'+escapeHtml(h.name)+'</div><div class="nights">'+escapeHtml(h.nights)+' &middot; Map \u2197</div></div></a>';
+  const b = h._booking;
+  let inner = '<span class="icon">\ud83c\udfe8</span><div><div class="name">'+escapeHtml(h.name)+'</div><div class="nights">'+escapeHtml(h.nights)+'</div>';
+  if(b && b.confirmation) inner += '<div class="nights">&#128274; Conf: '+escapeHtml(b.confirmation)+'</div>';
+  inner += '<div class="row" style="margin-top:6px;"><a class="btn map" href="'+link+'" target="_blank">Map \u2197</a>';
+  if(b && b.booking_url) inner += '<a class="btn activity" href="'+escapeHtml(b.booking_url)+'" target="_blank">Booking \u2197</a>';
+  inner += '</div></div>';
+  return '<div class="herohotel">'+inner+'</div>';
 }
 function plainCard(h, link){
-  return '<div class="hotel"><div class="icon">\ud83c\udfe8</div><div class="body"><div class="eyebrow">Staying at</div><div class="title">'+escapeHtml(h.name)+'</div><div class="nights">'+escapeHtml(h.nights)+'</div><div class="row"><a class="btn map" href="'+link+'" target="_blank">Map \u2197</a></div></div></div>';
+  const b = h._booking;
+  let html = '<div class="hotel"><div class="icon">\ud83c\udfe8</div><div class="body"><div class="eyebrow">Staying at</div><div class="title">'+escapeHtml(h.name)+'</div><div class="nights">'+escapeHtml(h.nights)+'</div>';
+  if(b && b.confirmation) html += '<div class="nights">&#128274; Conf: '+escapeHtml(b.confirmation)+'</div>';
+  html += '<div class="row"><a class="btn map" href="'+link+'" target="_blank">Map \u2197</a>';
+  if(b && b.booking_url) html += '<a class="btn activity" href="'+escapeHtml(b.booking_url)+'" target="_blank">Booking \u2197</a>';
+  html += '</div></div></div>';
+  return html;
 }
 
-// Main render: takes parsed CSV rows array
-function renderWithCsv(rows){
+// Main render: takes parsed CSV rows array, plus the private bookings overlay
+// (empty unless the passphrase has been entered on this device -- see
+// BOOKINGS_WORKER_URL below).
+function renderWithCsv(rows, bookings){
+  bookings = bookings || { entries:{}, hotels:{} };
   // normalize rows: CSV header names: id,category,date,time,description,name,location,url,photo,notes
   const entries = (rows || []).map(r => {
     const obj = {};
     Object.keys(r).forEach(k => obj[k.trim()] = (r[k]||'').trim());
     obj.category = (obj.category || '').toLowerCase();
+    if(obj.id && bookings.entries[obj.id]) obj._booking = bookings.entries[obj.id];
     return obj;
   });
 
@@ -648,10 +754,12 @@ function renderWithCsv(rows){
 
     const cityTitle = CITY_TITLE[d.n] || d.label;
     const dayPhoto = dayPhotoFor(cityTitle);
-    const hotel = HOTELS[DAY_HOTEL[d.n]];
+    const hotelKey = DAY_HOTEL[d.n];
+    const hotel = HOTELS[hotelKey] ? Object.assign({}, HOTELS[hotelKey], { _booking: bookings.hotels[hotelKey] }) : null;
     const hotelLink = hotel ? M(hotel.loc) : null;
     const prevKey = DAY_HOTEL[d.n - 1];
-    const startHotel = (prevKey && prevKey !== DAY_HOTEL[d.n]) ? HOTELS[prevKey] : null;
+    const startHotel = (prevKey && prevKey !== DAY_HOTEL[d.n] && HOTELS[prevKey])
+      ? Object.assign({}, HOTELS[prevKey], { _booking: bookings.hotels[prevKey] }) : null;
     const startHotelLink = startHotel ? M(startHotel.loc) : null;
 
     let html = '';
@@ -762,19 +870,150 @@ function parseCSV(text){
   });
 }
 
-// Load CSV from repo root (entries.csv)
+// --- Booking overlay: fetch/unlock/render wiring ------------------------
+let csvRows = [];
+let bookingsMap = { entries:{}, hotels:{} };
+function render(){ renderWithCsv(csvRows, bookingsMap); }
+
+function setLockState(unlocked){
+  const btn = document.getElementById('lockBtn');
+  const clearLink = document.getElementById('lockClear');
+  if(!btn) return;
+  btn.classList.toggle('unlocked', unlocked);
+  btn.innerHTML = unlocked ? '&#128275;' : '&#128274;';
+  btn.title = unlocked ? 'Booking details unlocked on this device (click to lock again)' : 'Unlock booking details';
+  if(clearLink) clearLink.classList.toggle('hidden', !unlocked);
+}
+
+// Asks the Worker for the private bookings JSON, sending the passphrase as
+// a bearer token. The Worker only returns data when it matches -- this is
+// a real server-side check, not something hidden client-side. A 401/403 is
+// distinguished from a network failure so callers can tell "wrong
+// passphrase" apart from "no signal right now" -- the latter should never
+// clear a saved passphrase or the offline cache.
+function fetchBookings(token){
+  return fetch(BOOKINGS_WORKER_URL, { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(res){
+      if(res.status === 401 || res.status === 403){
+        const err = new Error('unauthorized');
+        err.unauthorized = true;
+        throw err;
+      }
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+}
+
+function showLockError(message){
+  const errEl = document.getElementById('lockErr');
+  if(!errEl) return;
+  errEl.textContent = message;
+  errEl.style.display = 'block';
+}
+
+function tryUnlock(token, opts){
+  opts = opts || {};
+  return fetchBookings(token).then(function(data){
+    bookingsMap = { entries: data.entries || {}, hotels: data.hotels || {} };
+    localStorage.setItem(BOOKING_TOKEN_KEY, token);
+    // Cache the data itself (not just the token) so it's available with no
+    // network at all -- see the load-time hydration below.
+    try { localStorage.setItem(BOOKINGS_CACHE_KEY, JSON.stringify(bookingsMap)); } catch(e){ /* storage full/unavailable -- fine, just skip caching */ }
+    setLockState(true);
+    render();
+    return true;
+  }).catch(function(err){
+    console.error('Booking unlock failed', err);
+    if(err && err.unauthorized){
+      // Passphrase is genuinely wrong (or was revoked server-side) --
+      // drop everything, including any cached data from an old passphrase.
+      localStorage.removeItem(BOOKING_TOKEN_KEY);
+      localStorage.removeItem(BOOKINGS_CACHE_KEY);
+      bookingsMap = { entries:{}, hotels:{} };
+      setLockState(false);
+      render();
+      if(!opts.silent) showLockError('Incorrect passphrase.');
+    } else if(!opts.silent){
+      // Can't reach the Worker at all (offline, DNS, etc). Leave whatever
+      // token/cache we already have untouched -- this is not a rejection.
+      showLockError('Could not reach the booking server — check your connection.');
+    }
+    return false;
+  });
+}
+
+function lockAgain(){
+  bookingsMap = { entries:{}, hotels:{} };
+  localStorage.removeItem(BOOKING_TOKEN_KEY);
+  localStorage.removeItem(BOOKINGS_CACHE_KEY);
+  setLockState(false);
+  render();
+}
+
+const lockBtn = document.getElementById('lockBtn');
+const lockPanel = document.getElementById('lockPanel');
+const lockInput = document.getElementById('lockInput');
+const lockSubmit = document.getElementById('lockSubmit');
+const lockCancel = document.getElementById('lockCancel');
+const lockClear = document.getElementById('lockClear');
+const lockErr = document.getElementById('lockErr');
+
+if(lockBtn) lockBtn.addEventListener('click', function(){
+  if(lockBtn.classList.contains('unlocked')){ lockAgain(); return; }
+  lockPanel.classList.toggle('hidden');
+  if(!lockPanel.classList.contains('hidden')) lockInput.focus();
+});
+if(lockCancel) lockCancel.addEventListener('click', function(){ lockPanel.classList.add('hidden'); });
+if(lockSubmit) lockSubmit.addEventListener('click', function(){
+  lockErr.style.display = 'none';
+  const token = lockInput.value.trim();
+  if(!token) return;
+  tryUnlock(token).then(function(ok){
+    if(ok){ lockPanel.classList.add('hidden'); lockInput.value = ''; }
+  });
+});
+if(lockInput) lockInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter') lockSubmit.click();
+});
+if(lockClear) lockClear.addEventListener('click', function(){
+  lockAgain();
+  lockPanel.classList.add('hidden');
+});
+
+// Load the public itinerary -- this always works, with or without the
+// Worker deployed or reachable.
 fetch('entries.csv')
   .then(function(res){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     return res.text();
   })
   .then(function(text){
-    renderWithCsv(parseCSV(text));
+    csvRows = parseCSV(text);
+
+    const savedToken = localStorage.getItem(BOOKING_TOKEN_KEY);
+    const cached = localStorage.getItem(BOOKINGS_CACHE_KEY);
+    if(savedToken && cached){
+      // Show last-known booking data immediately, before any network call --
+      // this is what makes confirmation numbers/links show up with zero
+      // signal (e.g. opening the installed PWA on a plane).
+      try {
+        bookingsMap = JSON.parse(cached);
+        setLockState(true);
+      } catch(e){
+        console.error('Cached booking data was corrupt, ignoring', e);
+      }
+    }
+    render();
+
+    // Then, quietly try to refresh from the Worker if we can reach it --
+    // picks up anything added/changed since the cache was written. Never
+    // shown to the user as an error if it fails; see tryUnlock's silent path.
+    if(savedToken) tryUnlock(savedToken, { silent:true });
   })
   .catch(function(err){
     console.error('CSV load/parse error', err);
-    // fallback: render without CSV (will render only hardcoded hotel stops)
-    renderWithCsv([]);
+    csvRows = [];
+    render();
   });
 </script>
 <script>

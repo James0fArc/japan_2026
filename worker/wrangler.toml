@@ -1,0 +1,10 @@
+name = "japan-trip-bookings"
+main = "bookings-worker.js"
+compatibility_date = "2026-09-01"
+
+# Holds any booking PDFs you upload (see SETUP.md). Optional -- the Worker
+# still serves the /bookings JSON fine without this if you only ever use
+# external https:// links instead of stored files.
+[[r2_buckets]]
+binding = "BOOKING_FILES"
+bucket_name = "japan-trip-booking-files"

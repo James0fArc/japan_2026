@@ -1,7 +1,7 @@
 // sw.js — offline cache for the Japan 2026 trip site
 // Bump this version string any time you update the file list below,
 // so returning visitors (with wifi) pick up the new cache.
-const CACHE_NAME = "japan-2026-v1";
+const CACHE_NAME = "japan-2026-v2";
 
 // List every page and asset you want available offline.
 // Add a line for each day page, booking confirmation page, image, etc.
@@ -33,6 +33,7 @@ const FILES_TO_CACHE = [
   "./images/train_plane.jpg",
   "./images/train_shinkansen.jpg",
   "./images/train_spaciax.jpg",
+  ".'/images/train_nankaikoya.jpg",
   // activites
   "./images/arashiyama_boat.jpg",
   "./images/ghibli_museum.jpg",
