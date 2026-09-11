@@ -1,0 +1,8 @@
+{
+  "name": "japan-trip-bookings-backend",
+  "private": true,
+  "description": "Netlify Function + Blobs backend for the japan-trip itinerary's private booking data. Deployed separately from the public GitHub Pages site -- see ../SETUP.md.",
+  "dependencies": {
+    "@netlify/blobs": "^11.0.0"
+  }
+}
