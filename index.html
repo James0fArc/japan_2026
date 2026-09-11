@@ -370,18 +370,19 @@ const days = [
 { n:2, id:"d2", date:"Tue 10/6", label:"Yokohama \u2192 Hakone", stops:[
   {type:"hotel", title:"Ichinoyu Honkan", nights:"2 nights", loc:"Ichinoyu Honkan, Hakone", link:M("Ichinoyu Honkan Hakone")},
 ]},
-{ n:3, date:"Wed 10/7", label:"Hakone loop", stops:[
+{ n:3, date:"Wed 10/7", label:"Hakone", stops:[
 ]},
 { n:4, id:"d4", date:"Thu 10/8", label:"Hakone \u2192 Kyoto", stops:[
   {type:"hotel", title:"Madoka Kyoto Station West", nights:"3 nights", loc:"Madoka Kyoto Station West, Kyoto", link:M("Madoka Kyoto Station West")},
 ]},
-{ n:5, date:"Fri 10/9", label:"Kyoto \u2014 Fushimi \u2192 Higashiyama \u2192 Gion", stops:[
+{ n:5, date:"Fri 10/9", label:"Kyoto", stops:[
 ]},
-{ n:6, id:"d6", date:"Sat 10/10", label:"Kyoto \u2014 Arashiyama, Kinkaku-ji & Nijo Castle", stops:[
+{ n:6, id:"d6", date:"Sat 10/10", label:"Kyoto", stops:[
 ]},
-{ n:7, date:"Sun 10/11", label:"Kyoto \u2014 Ginkaku-ji, Philosopher's Path & Uji", stops:[
+{ n:7, date:"Sun 10/11", label:"Kyoto \u2192 Osaka", stops:[
+  {type:"hotel", title:"Nihonbashi Royal", nights:"2 nights", loc:"Nihonbashi Royal, Osaka", link:M("Nihonbashi Royal Osaka")},
 ]},
-{ n:8, date:"Mon 10/12", label:"Osaka \u2014 Castle, markets, teamLab", stops:[
+{ n:8, date:"Mon 10/12", label:"Osaka", stops:[
 ]},
 { n:9, id:"d9", date:"Tue 10/13", label:"Osaka \u2192 Koyasan", stops:[
   {type:"hotel", title:"Koyasan Shukubo Daimyoin", nights:"1 night", loc:"Koyasan Shukubo Daimyoin, Koyasan", link:M("Koyasan Shukubo Daimyoin")},
@@ -394,14 +395,14 @@ const days = [
 ]},
 { n:12, id:"d12", date:"Fri 10/16", label:"Nikko day trip", stops:[
 ]},
-{ n:13, date:"Sat 10/17", label:"Tokyo \u2014 Shinjuku \u2192 Shibuya", stops:[
+{ n:13, date:"Sat 10/17", label:"Tokyo", stops:[
 ]},
-{ n:14, date:"Sun 10/18", label:"Tokyo \u2014 Ghibli, Imperial Palace & Akihabara", stops:[
+{ n:14, date:"Sun 10/18", label:"Tokyo", stops:[
   // train travel will be replaced by CSV entries
 ]},
-{ n:15, date:"Mon 10/19", label:"Tokyo \u2014 Roppongi/Azabudai \u2192 Ginza", stops:[
+{ n:15, date:"Mon 10/19", label:"Tokyo", stops:[
 ]},
-{ n:16, date:"Tue 10/20", label:"Depart \u2014 Asakusa \u2192 Haneda", stops:[
+{ n:16, date:"Tue 10/20", label:"Depart", stops:[
 ]}
 ];
 
@@ -426,14 +427,15 @@ const daysEl = document.getElementById('days');
 const HOTELS = {
   yokohama:{name:"Yokohama: Hotel PLUMM", nights:"1 night", loc:"Hotel PLUMM Yokohama"},
   hakone:{name:"Hakone: Ichinoyu Honkan", nights:"2 nights", loc:"Ichinoyu Honkan Hakone"},
-  kyoto:{name:"Kyoto: Madoka Kyoto Station West", nights:"5 nights", loc:"Madoka Kyoto Station West"},
+  kyoto:{name:"Kyoto: Madoka Kyoto Station West", nights:"3 nights", loc:"Madoka Kyoto Station West"},
+  osaka:{name:"Osaka: Nihonbashi Royal", nights:"2 nights", loc:"Nihonbashi Royal Osaka"},
   koyasan:{name:"Koyasan: Koyasan Shukubo Daimyoin", nights:"1 night", loc:"Koyasan Shukubo Daimyoin"},
   nara:{name:"Nara: Hotel Asyl Nara", nights:"1 night", loc:"Hotel Asyl Nara"},
   tokyo:{name:"Tokyo: ELE Hotel", nights:"5 nights", loc:"ELE Hotel Tokyo"}
 };
 const DAY_HOTEL = {
   1:"yokohama", 2:"hakone", 3:"hakone", 4:"kyoto", 5:"kyoto", 6:"kyoto",
-  7:"kyoto", 8:"kyoto", 9:"koyasan", 10:"nara", 11:"tokyo", 12:"tokyo",
+  7:"osaka", 8:"osaka", 9:"koyasan", 10:"nara", 11:"tokyo", 12:"tokyo",
   13:"tokyo", 14:"tokyo", 15:"tokyo", 16:"tokyo"
 };
 
