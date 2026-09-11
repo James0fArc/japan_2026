@@ -438,6 +438,10 @@ const BOOKING_TOKEN_KEY = "jpTripBookingToken";
 // re-fetches quietly in the background whenever it can reach the Worker,
 // to pick up anything added/changed since.
 const BOOKINGS_CACHE_KEY = "jpTripBookingsCache";
+// Cache Storage bucket for stored booking files (PDFs etc.) -- shared
+// between the proactive prefetch (below) and openPrivateFile's own
+// fetch-if-not-cached fallback further down.
+const BOOKING_FILES_CACHE = "jpTripBookingFiles";
 
 // Derives a day's header photo from its city name, e.g. "Kyoto" -> images/kyoto.jpg.
 // Keeps day photos on the same dynamic, key-based system as entry photos (photoFromKey)
@@ -968,6 +972,44 @@ function showLockError(message){
   errEl.style.display = 'block';
 }
 
+// Every stored-file path ("/files/<name>") referenced anywhere in the
+// booking data -- entries and hotels, booking_url and links[] alike.
+function collectStoredFileUrls(map){
+  const urls = new Set();
+  function add(u){ if(isStoredFileUrl(u)) urls.add(u); }
+  Object.values(map.entries || {}).forEach(function(b){
+    add(b.booking_url);
+    if(Array.isArray(b.links)) b.links.forEach(function(l){ add(l && l.url); });
+  });
+  Object.values(map.hotels || {}).forEach(function(b){
+    add(b.booking_url);
+    if(Array.isArray(b.links)) b.links.forEach(function(l){ add(l && l.url); });
+  });
+  return Array.from(urls);
+}
+
+// Fetches and caches every stored booking file up front, right after a
+// successful unlock -- so offline access doesn't depend on having opened
+// each PDF by hand first while online. Runs in the background: unlock
+// completes immediately regardless of how long this takes or whether any
+// individual file fails (a slow/failed prefetch just means that one file
+// falls back to fetch-on-open next time, same as before this existed).
+async function prefetchStoredFiles(map, token){
+  const paths = collectStoredFileUrls(map);
+  if(!paths.length) return;
+  const cache = await caches.open(BOOKING_FILES_CACHE);
+  await Promise.all(paths.map(async function(path){
+    const url = BOOKINGS_WORKER_ORIGIN + path;
+    try {
+      if(await cache.match(url)) return; // already cached from a previous unlock
+      const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      if(res.ok) await cache.put(url, res.clone());
+    } catch(e){
+      console.warn('Could not pre-cache', path, e);
+    }
+  }));
+}
+
 function tryUnlock(token, opts){
   opts = opts || {};
   return fetchBookings(token).then(function(data){
@@ -978,6 +1020,7 @@ function tryUnlock(token, opts){
     try { localStorage.setItem(BOOKINGS_CACHE_KEY, JSON.stringify(bookingsMap)); } catch(e){ /* storage full/unavailable -- fine, just skip caching */ }
     setLockState(true);
     render();
+    prefetchStoredFiles(bookingsMap, token); // fire-and-forget, see above
     return true;
   }).catch(function(err){
     console.error('Booking unlock failed', err);
@@ -1047,7 +1090,7 @@ async function openPrivateFile(path){
   if(!token){ alert('Unlock booking details first.'); return; }
   const url = BOOKINGS_WORKER_ORIGIN + path;
   try {
-    const cache = await caches.open('jpTripBookingFiles');
+    const cache = await caches.open(BOOKING_FILES_CACHE);
     let response = await cache.match(url);
     if(!response){
       response = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });

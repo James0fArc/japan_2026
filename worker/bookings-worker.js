@@ -38,8 +38,8 @@ const BOOKINGS = {
     // Odawara -> Kyoto Shinkansen, 8 Oct -- one ticket per passenger.
     "e014": {
       links: [
-        { label: "Ticket 1", url: "https://shinkansen2.jr-central.co.jp/RSV_P/ClientServiceQR-Ticket?_encParam=0300N1zemTLu00R5BbCanj005SvC6hhh00al2ZRdEk002zgMHdku00Ittklv2q00wmtdRknW008G9wg1Fq00oVycrKlU00Ii8" },
-        { label: "Ticket 2", url: "https://shinkansen2.jr-central.co.jp/RSV_P/ClientServiceQR-Ticket?_encParam=0300NIkDkOd600HYGCy35o009kJVw3td001akN6I3Q002zgMHdku00Ittklv2q00wmtdRknW008G9wg1Fq00oVycrKcU00IiW" }
+        { label: "Car 12 2-D", url: "/files/odawarakyoto2.pdf" },
+        { label: "Car 12 2-E", url: "/files/odawarakyoto2.pdf" }
       ]
     },
     // Hozugawa Kudari Boat Ride, 9 Oct -- printable voucher with the
@@ -51,7 +51,7 @@ const BOOKINGS = {
     // Sagano Scenic Railway, 9 Oct.
     "e051": {
       confirmation: "ARS_SAGANO_KANKO-20260910-5MNU",
-      booking_url: "https://t.linktivity.io/issueticket/sagano-kanko/dGD9nN_zDNWrc6zQ/ARS_SAGANO_KANKO-20260910-5MNU/-?lang=EN"
+      booking_url: "/files/saganotrain.pdf"
     },
     // Ghibli Museum, 18 Oct -- entry ticket has its own QR code, so this is
     // stored too rather than just linked.
@@ -63,7 +63,7 @@ const BOOKINGS = {
     // entries.csv (moved here because it's a personal reservation link).
     // No separate confirmation number given for this one.
     "e052": {
-      booking_url: "https://reserve.pokemon-cafe.jp/reservations/MjyqdPD8NqMPEkGr"
+      booking_url: "/files/pokemoncafe.pdf"
     }
   },
 
