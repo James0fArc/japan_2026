@@ -413,11 +413,17 @@ const M = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIC
 // --- Private booking overlay --------------------------------------------
 // Booking confirmations and private reservation links never ship in
 // entries.csv (which is public, cached offline, and fetchable by anyone
-// with the page URL). Instead they live only in a small Cloudflare Worker
+// with the page URL). Instead they live only in a small serverless backend
 // that returns them exclusively when the right passphrase is supplied.
-// See /worker/bookings-worker.js and SETUP.md for how to deploy it, then
-// replace the URL below with your deployed Worker's address.
-const BOOKINGS_WORKER_URL = "https://japan-holiday-2026.netlify.app";
+// Two ready-made options are included -- pick one, deploy it, and put its
+// URL below:
+//   - Cloudflare:  /worker/bookings-worker.js
+//   - Netlify:     /netlify-backend/netlify/functions/bookings.mjs
+// See SETUP.md for the full walkthrough for either. Both expose the exact
+// same GET /bookings and GET /files/<key> routes, so nothing else on this
+// page needs to change depending on which you pick.
+const BOOKINGS_WORKER_ORIGIN = "https://japan-holiday-2026.netlify.app"; // or https://your-site.netlify.app
+const BOOKINGS_WORKER_URL = BOOKINGS_WORKER_ORIGIN + "/bookings";
 const BOOKING_TOKEN_KEY = "jpTripBookingToken";
 // Once unlocked, the bookings JSON itself is cached alongside the token so
 // confirmation numbers and reservation links keep showing even with no
@@ -585,16 +591,56 @@ function mapButtonsHtml(r){
   return '<a class="btn map" href="'+escapeHtml(m1 || m2)+'" target="_blank">Map \u2197</a>';
 }
 
-// Renders the private booking pill (confirmation number / reservation link)
-// for an entry, when one is present. r._booking is only ever set when the
-// booking overlay has been unlocked for this row (see BOOKINGS_WORKER_URL
-// below) -- entries.csv itself never contains this data.
+// A booking_url is either a normal https:// link (straight to the booking
+// page) or a "/files/<name>" path pointing at a file stored privately in
+// the backend's file storage (R2 on Cloudflare, Blobs on Netlify -- see
+// worker/bookings-worker.js or netlify-backend/netlify/functions/bookings.mjs).
+// Anything that isn't a full http(s) URL is treated as a stored file.
+function isStoredFileUrl(u){
+  return !!u && !/^https?:\/\//i.test(u);
+}
+
+// Renders a booking link two different ways depending on what it points to:
+//  - an external URL becomes a normal target=_blank link, same as any
+//    other button on the page.
+//  - a stored file becomes a button that fetches it with the passphrase
+//    (via openPrivateFile, wired up further down) and opens the result --
+//    it deliberately isn't a plain href, since the file has no public URL
+//    to link to in the first place.
+function bookingLinkHtml(url, label){
+  if(!url) return '';
+  label = label || 'Open';
+  if(isStoredFileUrl(url)){
+    return '<a class="btn activity filebtn" href="#" data-file="'+escapeHtml(url)+'">'+label+' ↗</a>';
+  }
+  return '<a class="btn activity" href="'+escapeHtml(url)+'" target="_blank">'+label+' ↗</a>';
+}
+
+// Most bookings have a single confirmation + one link, but some (e.g. two
+// train tickets for the same journey, booked as separate passengers) need
+// more than one. `booking_url` covers the single-link case; `links` is an
+// optional array of {label, url} for anything needing more than one --
+// both can be used at once if there's a primary link plus extras.
+function bookingLinksHtml(b, defaultLabel){
+  let html = bookingLinkHtml(b.booking_url, defaultLabel);
+  if(Array.isArray(b.links)){
+    b.links.forEach(function(l){
+      if(l && l.url) html += bookingLinkHtml(l.url, l.label || defaultLabel);
+    });
+  }
+  return html;
+}
+
+// Renders the private booking pill (confirmation number / reservation
+// link(s) or file) for an entry, when one is present. r._booking is only
+// ever set when the booking overlay has been unlocked for this row (see
+// BOOKINGS_WORKER_URL below) -- entries.csv itself never contains this data.
 function privateRowHtml(r){
   if(!r._booking) return '';
   const b = r._booking;
   let html = '<div class="privaterow"><span class="lbl">&#128274; Booking</span>';
   if(b.confirmation) html += '<span class="val">'+escapeHtml(b.confirmation)+'</span>';
-  if(b.booking_url) html += '<a class="btn activity" href="'+escapeHtml(b.booking_url)+'" target="_blank">Open ↗</a>';
+  html += bookingLinksHtml(b, 'Open');
   html += '</div>';
   return html;
 }
@@ -699,7 +745,7 @@ function heroCard(h, link){
   let inner = '<span class="icon">\ud83c\udfe8</span><div><div class="name">'+escapeHtml(h.name)+'</div><div class="nights">'+escapeHtml(h.nights)+'</div>';
   if(b && b.confirmation) inner += '<div class="nights">&#128274; Conf: '+escapeHtml(b.confirmation)+'</div>';
   inner += '<div class="row" style="margin-top:6px;"><a class="btn map" href="'+link+'" target="_blank">Map \u2197</a>';
-  if(b && b.booking_url) inner += '<a class="btn activity" href="'+escapeHtml(b.booking_url)+'" target="_blank">Booking \u2197</a>';
+  if(b) inner += bookingLinksHtml(b, 'Booking');
   inner += '</div></div>';
   return '<div class="herohotel">'+inner+'</div>';
 }
@@ -708,7 +754,7 @@ function plainCard(h, link){
   let html = '<div class="hotel"><div class="icon">\ud83c\udfe8</div><div class="body"><div class="eyebrow">Staying at</div><div class="title">'+escapeHtml(h.name)+'</div><div class="nights">'+escapeHtml(h.nights)+'</div>';
   if(b && b.confirmation) html += '<div class="nights">&#128274; Conf: '+escapeHtml(b.confirmation)+'</div>';
   html += '<div class="row"><a class="btn map" href="'+link+'" target="_blank">Map \u2197</a>';
-  if(b && b.booking_url) html += '<a class="btn activity" href="'+escapeHtml(b.booking_url)+'" target="_blank">Booking \u2197</a>';
+  if(b) html += bookingLinksHtml(b, 'Booking');
   html += '</div></div></div>';
   return html;
 }
@@ -978,6 +1024,41 @@ if(lockInput) lockInput.addEventListener('keydown', function(e){
 if(lockClear) lockClear.addEventListener('click', function(){
   lockAgain();
   lockPanel.classList.add('hidden');
+});
+
+// Opens a privately-stored booking file (e.g. a PDF). Unlike a normal link,
+// this fetches it with the passphrase as an Authorization header -- the
+// file has no public URL for a plain <a href> to point at. First fetch of
+// a given file is cached (Cache Storage API) so re-opening it later works
+// offline too, same spirit as the bookings JSON cache above.
+async function openPrivateFile(path){
+  const token = localStorage.getItem(BOOKING_TOKEN_KEY);
+  if(!token){ alert('Unlock booking details first.'); return; }
+  const url = BOOKINGS_WORKER_ORIGIN + path;
+  try {
+    const cache = await caches.open('jpTripBookingFiles');
+    let response = await cache.match(url);
+    if(!response){
+      response = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      if(!response.ok) throw new Error('HTTP ' + response.status);
+      cache.put(url, response.clone());
+    }
+    const blob = await response.blob();
+    window.open(URL.createObjectURL(blob), '_blank');
+  } catch(err){
+    console.error('Could not open private file', err);
+    alert('Could not load that file — check your connection and try again.');
+  }
+}
+
+// Delegated click handler for every .filebtn rendered anywhere on the page
+// (entry cards, hotel cards) -- simpler than wiring a listener per card
+// since these are injected via innerHTML.
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.filebtn');
+  if(!btn) return;
+  e.preventDefault();
+  openPrivateFile(btn.dataset.file);
 });
 
 // Load the public itinerary -- this always works, with or without the
