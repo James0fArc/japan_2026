@@ -25,6 +25,16 @@
     --gold-deep:#8A6A2A;
     --indigo:#7C93C2;
     --indigo-deep:#3E5480;
+    /* Left-edge fade for entry photos: a CSS mask (not a painted-on colour
+       overlay), so the photo's own opacity drops off toward the left and
+       whatever's actually behind it shows through -- the entry card's real
+       background, not an approximation of it. Colour here is irrelevant
+       (masks use alpha only); only the opacity values matter. */
+    --photo-fade: linear-gradient(90deg,
+      rgba(0,0,0,0) 0%, rgba(0,0,0,0.05) 10%,
+      rgba(0,0,0,0.22) 25%, rgba(0,0,0,0.5) 40%,
+      rgba(0,0,0,0.78) 55%, rgba(0,0,0,0.95) 70%,
+      rgba(0,0,0,1) 88%);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -196,14 +206,9 @@
   .traincard .route .row{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center;} 
   .traincard .photo{
     position:relative;flex:1;min-width:110px;background-size:cover;background-position:center;
-  }
-  .traincard .photo::before{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg,
-      var(--surface) 0%, var(--surface) 12%,
-      rgba(31,23,18,0.92) 26%, rgba(31,23,18,0.72) 40%,
-      rgba(31,23,18,0.46) 55%, rgba(31,23,18,0.22) 70%,
-      rgba(31,23,18,0) 88%);
+    -webkit-mask-image:var(--photo-fade);mask-image:var(--photo-fade);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
   }
   .traincard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -227,14 +232,9 @@
   .bookedcard .btn.activity{color:#66BB6A;border-color:rgba(76,175,80,0.45);} 
   .bookedcard .photo{
     position:relative;flex:1;min-width:110px;background-size:cover;background-position:center;
-  }
-  .bookedcard .photo::before{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg,
-      var(--surface) 0%, var(--surface) 12%,
-      rgba(31,23,18,0.92) 26%, rgba(31,23,18,0.72) 40%,
-      rgba(31,23,18,0.46) 55%, rgba(31,23,18,0.22) 70%,
-      rgba(31,23,18,0) 88%);
+    -webkit-mask-image:var(--photo-fade);mask-image:var(--photo-fade);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
   }
   .bookedcard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -258,14 +258,9 @@
   .plannedcard .btn.activity{color:var(--momiji);border-color:rgba(226,97,47,0.45);} 
   .plannedcard .photo{
     position:relative;flex:1;min-width:110px;background-size:cover;background-position:center;
-  }
-  .plannedcard .photo::before{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg,
-      var(--surface) 0%, var(--surface) 12%,
-      rgba(31,23,18,0.92) 26%, rgba(31,23,18,0.72) 40%,
-      rgba(31,23,18,0.46) 55%, rgba(31,23,18,0.22) 70%,
-      rgba(31,23,18,0) 88%);
+    -webkit-mask-image:var(--photo-fade);mask-image:var(--photo-fade);
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
   }
   .plannedcard .photo .name{
     position:absolute;right:14px;bottom:12px;z-index:1;color:#fff;font-weight:800;font-size:17px;
@@ -434,7 +429,7 @@ const M = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIC
 // See SETUP.md for the full walkthrough for either. Both expose the exact
 // same GET /bookings and GET /files/<key> routes, so nothing else on this
 // page needs to change depending on which you pick.
-const BOOKINGS_WORKER_ORIGIN = "https://japan-holiday-2026.netlify.app"; // or https://your-site.netlify.app
+const BOOKINGS_WORKER_ORIGIN = "https://japan-holiday-2026.netlify.app";
 const BOOKINGS_WORKER_URL = BOOKINGS_WORKER_ORIGIN + "/bookings";
 const BOOKING_TOKEN_KEY = "jpTripBookingToken";
 // Once unlocked, the bookings JSON itself is cached alongside the token so
