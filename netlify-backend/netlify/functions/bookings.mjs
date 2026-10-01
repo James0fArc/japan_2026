@@ -41,8 +41,8 @@ const BOOKINGS = {
     // Odawara -> Kyoto Shinkansen, 8 Oct -- one ticket per passenger.
     "e014": {
       links: [
-        { label: "Ticket 1", url: "https://shinkansen2.jr-central.co.jp/RSV_P/ClientServiceQR-Ticket?_encParam=0300N1zemTLu00R5BbCanj005SvC6hhh00al2ZRdEk002zgMHdku00Ittklv2q00wmtdRknW008G9wg1Fq00oVycrKlU00Ii8" },
-        { label: "Ticket 2", url: "https://shinkansen2.jr-central.co.jp/RSV_P/ClientServiceQR-Ticket?_encParam=0300NIkDkOd600HYGCy35o009kJVw3td001akN6I3Q002zgMHdku00Ittklv2q00wmtdRknW008G9wg1Fq00oVycrKcU00IiW" }
+        { label: "2-D", url: "https://shinkansen2.jr-central.co.jp/RSV_P/ClientServiceQR-Ticket?_encParam=0300N1zemTLu00R5BbCanj005SvC6hhh00al2ZRdEk002zgMHdku00Ittklv2q00wmtdRknW008G9wg1Fq00oVycrKlU00Ii8" },
+        { label: "2-E", url: "https://shinkansen2.jr-central.co.jp/RSV_P/ClientServiceQR-Ticket?_encParam=0300NIkDkOd600HYGCy35o009kJVw3td001akN6I3Q002zgMHdku00Ittklv2q00wmtdRknW008G9wg1Fq00oVycrKcU00IiW" }
       ]
     },
     // Hozugawa Kudari Boat Ride, 9 Oct -- printable voucher with the
@@ -50,6 +50,11 @@ const BOOKINGS = {
     "e020": {
       confirmation: "ARS_HOZUGAWA-20260910-6TSR",
       booking_url: "/files/hosugawavoucher.pdf"
+    },
+    //Okunoin night tour, 13 Oct
+    "e030": {
+      confirmation: "RZ260912VH0845",
+      booking_url: "/files/okunoin.pdf"
     },
     // Sagano Scenic Railway, 9 Oct.
     "e051": {
@@ -67,6 +72,20 @@ const BOOKINGS = {
     // No separate confirmation number given for this one.
     "e052": {
       booking_url: "https://reserve.pokemon-cafe.jp/reservations/MjyqdPD8NqMPEkGr"
+    },
+    // Spacia X, 16 Oct
+    "e036": {
+      confirmation: "Ex20260916Q53BS3 (Premiun) - James",
+      booking_url: "https://tobu-japantrip-tickets.com/mypage/purchased-tickets/traffic"
+    },
+    "e038": {
+      confirmation: "Ex20260916NL84UX (Cockpit Lounge) - Nathalie",
+      booking_url: "https://tobu-japantrip-tickets.com/mypage/purchased-tickets/traffic"
+    },
+    // Teamlab Borderless, 19 Oct
+    "e046": {
+      confirmation: "AC4PKAVXLLN7-0001",
+      booking_url: "https://borderless-azabudai.ticket.teamlab.art/tickets/#/id/HbSMQ0J0yQ5AGkzsBfdoJMmqKhqMMtb3CyrYn3xDYfDBjIVO-g1ZtTvTkEqK1ljp"
     }
   },
 
